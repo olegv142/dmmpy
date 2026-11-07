@@ -15,7 +15,7 @@ if %errorLevel% neq 0 (
 cd /d "%~dp0"
 cd ..
 
-for %%I in (ut61xp-plot.exe) do set "targetPath=%%~fI"
+for %%I in (dmm-plot.exe) do set "targetPath=%%~fI"
 
 ftype DMMTools.Data="%targetPath%" "%%1"
 assoc .data=DMMTools.Data

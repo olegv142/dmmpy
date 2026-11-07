@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 """
-The UNI-T UT61X+/UT60BT and OWON multimeters data acquisition and plotting tool
+The digital multimeters and ADC data acquisition and plotting tool
 """
 
 import sys
-from ut61xp_get import main
+from dmm_get import main
 
 if __name__ == '__main__':
     sys.exit(main())

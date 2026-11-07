@@ -1,5 +1,5 @@
 """
-The UNI-T UT61X+/UT60BT and other multimeters data acquisition and plotting tool
+The digital multimeters and ADC data acquisition and plotting tool
 """
 
 import os

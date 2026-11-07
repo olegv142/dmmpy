@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 a1 = Analysis(
-    ['../ut61xp-get'],
+    ['../dmm-get'],
     pathex=['../adapters'],
     binaries=[],
     datas=[('../misc/meter.png', 'misc')],
@@ -15,7 +15,7 @@ a1 = Analysis(
 )
 
 a2 = Analysis(
-    ['../ut61xp-plot'],
+    ['../dmm-plot'],
     pathex=['../adapters'],
     binaries=[],
     datas=[('../misc/meter.png', 'misc')],
@@ -29,7 +29,7 @@ a2 = Analysis(
 )
 
 a3 = Analysis(
-    ['../ut61xp-hist'],
+    ['../dmm-hist'],
     pathex=['../adapters'],
     binaries=[],
     datas=[('../misc/meter.png', 'misc')],
@@ -43,7 +43,7 @@ a3 = Analysis(
 )
 
 a4 = Analysis(
-    ['../ut61xp-stat'],
+    ['../dmm-stat'],
     pathex=['../adapters'],
     binaries=[],
     datas=[('../misc/meter.png', 'misc')],
@@ -57,7 +57,7 @@ a4 = Analysis(
 )
 
 a5 = Analysis(
-    ['../ut61xp-start'],
+    ['../dmm-start'],
     pathex=['../adapters'],
     binaries=[],
     datas=[('../misc/meter.png', 'misc')],
@@ -75,7 +75,7 @@ exe1 = EXE(
     a1.scripts,
     [],
     exclude_binaries=True,
-    name='ut61xp-get',
+    name='dmm-get',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -95,7 +95,7 @@ exe2 = EXE(
     a2.scripts,
     [],
     exclude_binaries=True,
-    name='ut61xp-plot',
+    name='dmm-plot',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -115,7 +115,7 @@ exe3 = EXE(
     a3.scripts,
     [],
     exclude_binaries=True,
-    name='ut61xp-hist',
+    name='dmm-hist',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -135,7 +135,7 @@ exe4 = EXE(
     a4.scripts,
     [],
     exclude_binaries=True,
-    name='ut61xp-stat',
+    name='dmm-stat',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -155,7 +155,7 @@ exe5 = EXE(
     a5.scripts,
     [],
     exclude_binaries=True,
-    name='ut61xp-start',
+    name='dmm-start',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

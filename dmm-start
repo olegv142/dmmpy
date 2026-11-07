@@ -19,7 +19,7 @@ import multiprocessing
 from multiprocessing import Process, Pipe
 from abc import ABC, abstractmethod
 from enum import Enum
-from ut61xp_get import _main, _supported_devices
+from dmm_get import _main, _supported_devices
 from version import version_str
 
 try:
