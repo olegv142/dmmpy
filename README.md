@@ -8,8 +8,8 @@ The project was started as robust and simple tool for reading data from UNI-T UT
  - support for dual channel reading and plotting (DC+AC mode of UT61E+ for ex.)
  - seamless working on Windows, Linux and MacOS
  - convenient working with several devices simultaneously
- - single CLI tool (**ut61xp-get**) for data collection and visualization
- - simple GUI frontend application (**ut61xp-start**) with the same capabilities as CLI tool
+ - single CLI tool (**dmm-get**) for data collection and visualization
+ - simple GUI frontend application (**dmm-start**) with the same capabilities as CLI tool
  - ease of adding new multimeter models
  - ease of reuse in other projects
 
@@ -37,7 +37,7 @@ OWON produces a line of desktop multimeters that use the SCPI communication prot
 OWON produces a line of programmable laboratory power supplies that use the SCPI communication protocol via USB connection. The tool provides the way to read output current value and optionally output voltage in alternative measuring channel. The tool is tested with SPE3051 device. It should be noted that the accuracy of the current values reported by such a device is quite low. It has dead band below 10mA where the current is always reported as zero. Higher current values are reported inaccurately with constant offset of +5mA.
 
 ### OWON programmable electronic loads
-OWON produces a line of programmable electronic loads that use the SCPI communication protocol via USB or RS232 connection. The OEL1515 for example can sink current of up to 15A at the voltage of up to 150V. They provide much better resolution in measuring current and voltage than programmable power sources. These device are not directly supported by **ut61xp-get** and **ut61xp-start** tools, but you can interact with them using your own code. See [Working with OWON programmable electronic load](#working-with-owon-programmable-electronic-load).
+OWON produces a line of programmable electronic loads that use the SCPI communication protocol via USB or RS232 connection. The OEL1515 for example can sink current of up to 15A at the voltage of up to 150V. They provide much better resolution in measuring current and voltage than programmable power sources. These device are not directly supported by **dmm-get** and **dmm-start** tools, but you can interact with them using your own code. See [Working with OWON programmable electronic load](#working-with-owon-programmable-electronic-load).
 
 ### ANENG / ZOTEK / BSIDE multimeters
 This tool supports Aneng AN9002 model also sold as ZOTEK/BSIDE ZT-300AB. It has 6000 counts display with 10µV voltage measuring resolution, 0.1µA current measuring resolution with 100 Ohm shunt resistance and 1pF capacity resolution. The stand is terrible, the quality of the probes is questionable, but other than that its quite usable with good display and small power consumption (3.5mA with Bluetooth active). Despite such low power consumption it has the best Bluetooth communication range among all tested multimeters. The only thing noticed that may be considered as a drawback is relatively low input impedance in voltage measuring mode. Its around 1 MOhm while other DMM typically have an input impedance of around 10 MOhm.
@@ -61,7 +61,7 @@ The installation basically involves three steps - getting the source, installing
 
 ### Getting the source code
 ```
-git clone https://github.com/olegv142/ut61xpy.git
+git clone https://github.com/olegv142/dmmpy.git
 ```
 Alternatively you can download source code archive and unpack it. 
 
@@ -105,11 +105,11 @@ pip install hidapi pyserial bleak matplotlib
 
 On MacOS you should create virtual environment first:
 ```
-cd ut61xpy
+cd dmmpy
 python3 -m venv .venv
 source .venv/bin/activate
 ```
-This will create virtual environment in the *.venv* folder under *ut61xpy* directory. You will need to activate it by executing *source .venv/bin/activate* before using the tool. Same steps are applicable on Linux in case you don't want or not able to install packages by package manager.
+This will create virtual environment in the *.venv* folder under *dmmpy* directory. You will need to activate it by executing *source .venv/bin/activate* before using the tool. Same steps are applicable on Linux in case you don't want or not able to install packages by package manager.
 
 Now you can install packages in the virtual environment by executing
 ```
@@ -117,24 +117,24 @@ pip3 install hidapi pyserial bleak matplotlib
 ```
 To check the tool is now working you can execute [Acquisition launcher](#data-acquisition-launcher)
 ```
-./ut61xp-start
+./dmm-start
 ```
 The launcher window should appear. If you have compatible multimeter on, you can now try to start collecting data from it.
-On Windows you have to execute *python ut61xp-start* since this system does not support the concept of executable python scripts.
+On Windows you have to execute *python dmm-start* since this system does not support the concept of executable python scripts.
 
 ### Using portable binaries
-Working with sources is the preferred way of using this tool on Linux. On Windows one can just download latest [release](https://github.com/olegv142/ut61xpy/releases) of portable binaries as self-extracting archive, unpack them to readable folder, then go to the *dmm-tools* folder and double click **ut61xp-start** acquisition launcher to start working immediately without any additional installation efforts. See [Working with GUI](#working-with-gui) section for more details. To make your work on Windows more convenient you can go to the *dmm-tools/scripts* folder and double click on the *create_links.bat* and *associate_data.bat* scripts. See [Working with standalone executables](#working-with-standalone-executables) for more details. See also notes about [security concerns](#the-windows-protected-your-pc-warning-always-appears-on-attempt-to-run-self-extracting-distribution-archive) related to this installation method.
+Working with sources is the preferred way of using this tool on Linux. On Windows one can just download latest [release](https://github.com/olegv142/dmmpy/releases) of portable binaries as self-extracting archive, unpack them to readable folder, then go to the *dmm-tools* folder and double click **dmm-start** acquisition launcher to start working immediately without any additional installation efforts. See [Working with GUI](#working-with-gui) section for more details. To make your work on Windows more convenient you can go to the *dmm-tools/scripts* folder and double click on the *create_links.bat* and *associate_data.bat* scripts. See [Working with standalone executables](#working-with-standalone-executables) for more details. See also notes about [security concerns](#the-windows-protected-your-pc-warning-always-appears-on-attempt-to-run-self-extracting-distribution-archive) related to this installation method.
 
 # Working with command line
-The CLI workflow is built around **ut61xp-get** script which implements several commands for data acquisition, plotting and simple statistic analysis like making histogram and calculating momentums. The script has many command line options that we discuss briefly in the following sections. We first consider working with UNI-T UT61B/D/E+ multimeters via the standard USB HID adapter UT-D09A typically supplied with the device. After that we will consider working via Bluetooth and communicating with other supported multimeter models.
+The CLI workflow is built around **dmm-get** script which implements several commands for data acquisition, plotting and simple statistic analysis like making histogram and calculating momentums. The script has many command line options that we discuss briefly in the following sections. We first consider working with UNI-T UT61B/D/E+ multimeters via the standard USB HID adapter UT-D09A typically supplied with the device. After that we will consider working via Bluetooth and communicating with other supported multimeter models.
 
 ## Basic usage
 
-The **ut61xp-get** will auto detect UT-D09A USB adapter provided that there is exactly one such adapter connected to your computer. The **ut61xp-get list** command prints paths for all connected adapters. The **ut61xp-get once** reads single value from the connected device and prints it to standard output. The **ut61xp-get data** reads values continuously from the connected device and either prints them or saves to the file if *-f/--file* option is provided. With *-p/--progress* option the tool will output dots to standard output while saving values to the file to indicate progress. In case the current reading is invalid (overflowed) the dot will be replaced by exclamation mark. To terminate data reading one can press Ctrl-C. The output file will contain time in seconds since readout start as the first column. With *-e/--epoch* option the epoch time will be used instead. One can use *-d/--delimiter* option to set additional delimiter to be used between columns which is the single space by default. With *-o/--offset, -m/--mult* options the data will be linearly scaled before saving / plotting. These options are handy to remove fixed offset from the data or to convert voltage across current sensing resistor to actual current value. The *-i/--interval* option may be used to specify data reading interval in seconds. The default interval is zero so that the data is read with maximal possible rate.
+The **dmm-get** will auto detect UT-D09A USB adapter provided that there is exactly one such adapter connected to your computer. The **dmm-get list** command prints paths for all connected adapters. The **dmm-get once** reads single value from the connected device and prints it to standard output. The **dmm-get data** reads values continuously from the connected device and either prints them or saves to the file if *-f/--file* option is provided. With *-p/--progress* option the tool will output dots to standard output while saving values to the file to indicate progress. In case the current reading is invalid (overflowed) the dot will be replaced by exclamation mark. To terminate data reading one can press Ctrl-C. The output file will contain time in seconds since readout start as the first column. With *-e/--epoch* option the epoch time will be used instead. One can use *-d/--delimiter* option to set additional delimiter to be used between columns which is the single space by default. With *-o/--offset, -m/--mult* options the data will be linearly scaled before saving / plotting. These options are handy to remove fixed offset from the data or to convert voltage across current sensing resistor to actual current value. The *-i/--interval* option may be used to specify data reading interval in seconds. The default interval is zero so that the data is read with maximal possible rate.
 
 ## Automatic file naming
 
-In case the file with the name provided with *-f* option already exists it will be silently overwritten. Therefore, you will either have to use a different name the next time you run data collection, or move the data file to a different location if you need it later. The **ut61xp-get** tool offers a convenient alternative: automatic file naming. In case the name given with *-f* option contains % character(s) it will be treated as the template for current date/time formatting as performed by [strftime](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior) function. Another useful feature is the possibility to add directory part to filename argument. The directory will be automatically created if not yet exists. For example with *-f %Y-%m-%d/%H%M%S.data* option the file with name representing current time will be placed to the directory with the name representing current date. In case the name given with *-f* option contains ${MODEL} substring, it will be replaced by the currently used multimeter model making filenames more informative.
+In case the file with the name provided with *-f* option already exists it will be silently overwritten. Therefore, you will either have to use a different name the next time you run data collection, or move the data file to a different location if you need it later. The **dmm-get** tool offers a convenient alternative: automatic file naming. In case the name given with *-f* option contains % character(s) it will be treated as the template for current date/time formatting as performed by [strftime](https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior) function. Another useful feature is the possibility to add directory part to filename argument. The directory will be automatically created if not yet exists. For example with *-f %Y-%m-%d/%H%M%S.data* option the file with name representing current time will be placed to the directory with the name representing current date. In case the name given with *-f* option contains ${MODEL} substring, it will be replaced by the currently used multimeter model making filenames more informative.
 
 ## Dual channel mode
 
@@ -142,23 +142,23 @@ Dual channel mode is handy while reading data in DC+AC mode of UT61E+. To use th
 
 ## Graph plotting
 
-The **ut61xp-get data** command will plot data read from device in separate window if *-g/--graph* option is provided. To terminate data reading in such mode one can just close graph window. With dual channel mode the graph window will contain two plots. The *-w/--wnd* option may be used to limit the number of recent data samples utilized to produce the plot by the specific number. Alternatively, if expressed as negative number of seconds the *-w/--wnd* option will limit the time range of the plot. You can switch window mode on / off while plotting data by pressing 'w' hot key in the plot window. One can add any number of additional horizontal lines at specific levels to mark some specific value boundaries with *--hline* and *--alt-hline* options (the latter draws them on the second channel plot). These options may be used multiple times to add multiple horizontal lines. There are several other options that can be used for styling the graph window. One can set window title (*-t/--title*), plot title (*--plot-title, --alt-title*), data line style (*--line-style*), horizontal line style (*--hline-style*), data line colors (*--line-color, --alt-line-color*), horizontal line color (*--hline-color*). In case plot title is not provided as command line argument the current measuring mode reported by multimeter will be used as the title. In case window title is not provided as command line argument the multimeter model will be used as the title. You can use plot navigation bar as usual. In particular, you can use pan/zoom controls of the graph window while reading the data or use the dedicated button to save plot to the file, yet the acquisition will be paused until you done with plot saving. Additionally double clicking the plot will toggle full screen mode. To open the graph window in full screen mode from the start, you can use the *--full-screen* command line option. With '-z/--with-zero' the zero value will always be included in the displayed vertical axis range. This will help to understand the scale of the signal fluctuations with respect to the signal value. Pressing 'z' key in plot window switches 'with-zero' mode on / off regardless of the '-z/--with-zero' option.
+The **dmm-get data** command will plot data read from device in separate window if *-g/--graph* option is provided. To terminate data reading in such mode one can just close graph window. With dual channel mode the graph window will contain two plots. The *-w/--wnd* option may be used to limit the number of recent data samples utilized to produce the plot by the specific number. Alternatively, if expressed as negative number of seconds the *-w/--wnd* option will limit the time range of the plot. You can switch window mode on / off while plotting data by pressing 'w' hot key in the plot window. One can add any number of additional horizontal lines at specific levels to mark some specific value boundaries with *--hline* and *--alt-hline* options (the latter draws them on the second channel plot). These options may be used multiple times to add multiple horizontal lines. There are several other options that can be used for styling the graph window. One can set window title (*-t/--title*), plot title (*--plot-title, --alt-title*), data line style (*--line-style*), horizontal line style (*--hline-style*), data line colors (*--line-color, --alt-line-color*), horizontal line color (*--hline-color*). In case plot title is not provided as command line argument the current measuring mode reported by multimeter will be used as the title. In case window title is not provided as command line argument the multimeter model will be used as the title. You can use plot navigation bar as usual. In particular, you can use pan/zoom controls of the graph window while reading the data or use the dedicated button to save plot to the file, yet the acquisition will be paused until you done with plot saving. Additionally double clicking the plot will toggle full screen mode. To open the graph window in full screen mode from the start, you can use the *--full-screen* command line option. With '-z/--with-zero' the zero value will always be included in the displayed vertical axis range. This will help to understand the scale of the signal fluctuations with respect to the signal value. Pressing 'z' key in plot window switches 'with-zero' mode on / off regardless of the '-z/--with-zero' option.
 
 ## Plotting already collected data
 
-The **ut61xp-get plot** command followed by the list of filenames plots the data sets reading them from the given files. It is just a convenient tool for viewing the collected data without any complex charting features. You can use plot navigation bar as usual and use double click to toggle full screen mode. While plotting single file you can press space to print statistics to console or press t to toggle showing statistics on the plot window. See [Printing data statistics](#printing-data-statistics) section for more details.
+The **dmm-get plot** command followed by the list of filenames plots the data sets reading them from the given files. It is just a convenient tool for viewing the collected data without any complex charting features. You can use plot navigation bar as usual and use double click to toggle full screen mode. While plotting single file you can press space to print statistics to console or press t to toggle showing statistics on the plot window. See [Printing data statistics](#printing-data-statistics) section for more details.
 
 ## Data units and scaling
 
-The data reported by multimeter typically contains information about measurement mode (say voltage) and/or measurement units (say millivolts). The units may be voluntary changed by the device as a result of the automatic range selection (for ex. millivolts to volts). Many vendor provided and third party data readout applications just save data in the units reported by device. This practice is bad since the data with sudden change of units will show abrupt jump with several orders of magnitude and will look as a mess overall. The **ut61xp-get** tool takes special care to guarantee that the units of the data will be the same no matter how auto-ranging works on the particular device. The particular units used for the data representation will be shown as the default plot title with *-g* option and will be saved in the first line of the output file with *-f* or *-a* options.
+The data reported by multimeter typically contains information about measurement mode (say voltage) and/or measurement units (say millivolts). The units may be voluntary changed by the device as a result of the automatic range selection (for ex. millivolts to volts). Many vendor provided and third party data readout applications just save data in the units reported by device. This practice is bad since the data with sudden change of units will show abrupt jump with several orders of magnitude and will look as a mess overall. The **dmm-get** tool takes special care to guarantee that the units of the data will be the same no matter how auto-ranging works on the particular device. The particular units used for the data representation will be shown as the default plot title with *-g* option and will be saved in the first line of the output file with *-f* or *-a* options.
 
 ## Using configurations
 
-The configuration is the file storing the full set of command line options in the form of json dictionary. Use *--cfg-save* option with **ut61xp-get data** command to create such file filled with options specified in the current command line and *-c/--cfg-load* option to load such file back. They may be handy to save typing and even more importantly to make data acquisition from several devices easier. Several examples of using them while [working with several devices simultaneously](#working-with-several-devices-simultaneously) will be given below.
+The configuration is the file storing the full set of command line options in the form of json dictionary. Use *--cfg-save* option with **dmm-get data** command to create such file filled with options specified in the current command line and *-c/--cfg-load* option to load such file back. They may be handy to save typing and even more importantly to make data acquisition from several devices easier. Several examples of using them while [working with several devices simultaneously](#working-with-several-devices-simultaneously) will be given below.
 
 ## Printing data statistics
 
-With *-s/--stat* option the **ut61xp-get data** command will print various collected data statistic metrics upon acquisition termination. In particular:
+With *-s/--stat* option the **dmm-get data** command will print various collected data statistic metrics upon acquisition termination. In particular:
  - the number of data samples (total and valid)
  - the min / max values
  - the median and pure average values
@@ -171,12 +171,12 @@ The last two metrics may be used to characterize deviations from the mean. The s
 
 ### Print statistics while plotting data
 
-With *-S/--plot-stat* option the **ut61xp-get data** command will show data statistics on the plot window and update it on every new data sample. The *--plot-stat-loc* option may be used to specify the particular location on the plot where the statistics box will be placed. The default is 'lower left'. With *--plot-stat-loc "best"* options the location will be chosen automatically to minimize overlapping with data curve. The statistic display area may be shown / hidden while plotting by pressing 't' key. This hot key works regardless of the *-S/--plot-stat* option.
+With *-S/--plot-stat* option the **dmm-get data** command will show data statistics on the plot window and update it on every new data sample. The *--plot-stat-loc* option may be used to specify the particular location on the plot where the statistics box will be placed. The default is 'lower left'. With *--plot-stat-loc "best"* options the location will be chosen automatically to minimize overlapping with data curve. The statistic display area may be shown / hidden while plotting by pressing 't' key. This hot key works regardless of the *-S/--plot-stat* option.
 Another way to view current statistics is to press the space bar in the chart window. This will print the statistics on the terminal so you can easily copy / paste them.
 
 ### Print statistics given the existing data file
 
-The **ut61xp-get stat input_file** command prints statistics of the data stored in the given *input_file*.
+The **dmm-get stat input_file** command prints statistics of the data stored in the given *input_file*.
 
 ## Plot window hotkeys
 The following keys (partially discussed above) have special meaning when pressed in the data plot window:
@@ -199,54 +199,54 @@ Some of these hot keys are implemented by matplotlib library. Note that in panni
 
 ## Working with data histograms
 
-The **ut61xp-get hist input_file** command creates histogram for the given input file. It either prints it to standard output or saves to the file if *-f/--out-file* option is given. The output data formatting may be customized by *-d/--delimiter* option. The *-b/--bins* option may be used to set the required number of bins in the histogram. With *-g/--graph* the histogram will be plotted in the separate window. One can plot the histogram saved to the file by  **ut61xp-get plot** command as any other data file.
+The **dmm-get hist input_file** command creates histogram for the given input file. It either prints it to standard output or saves to the file if *-f/--out-file* option is given. The output data formatting may be customized by *-d/--delimiter* option. The *-b/--bins* option may be used to set the required number of bins in the histogram. With *-g/--graph* the histogram will be plotted in the separate window. One can plot the histogram saved to the file by  **dmm-get plot** command as any other data file.
 
 ## Getting help
 
-Execute **ut61xp-get** tool with *-h* option to get detailed information about command line options. On Windows:
+Execute **dmm-get** tool with *-h* option to get detailed information about command line options. On Windows:
 ```
-python ut61xpy/ut61xp-get -h
-python ut61xpy/ut61xp-get data -h
-python ut61xpy/ut61xp-get hist -h
+python dmmpy/dmm-get -h
+python dmmpy/dmm-get data -h
+python dmmpy/dmm-get hist -h
 ```
 On Linux the following will work either:
 ```
-./ut61xpy/ut61xp-get -h
-./ut61xpy/ut61xp-get data -h
-./ut61xpy/ut61xp-get hist -h
+./dmmpy/dmm-get -h
+./dmmpy/dmm-get data -h
+./dmmpy/dmm-get hist -h
 ```
 
 ## Working with several devices simultaneously
 
-Suppose we have UT61E+ and UT61D+ devices and are going to read data from them simultaneously. We use different models just for illustrative purpose, they may be the same. We can find out path to each device by connecting them one by one and using **ut61xp-get list** command. After that we can pass the path to **ut61xp-get data** command like *ut61xp-get --path PATH data OPTIONS* but it takes a lot of typing. Using configurations may make life easier. One can do the following
+Suppose we have UT61E+ and UT61D+ devices and are going to read data from them simultaneously. We use different models just for illustrative purpose, they may be the same. We can find out path to each device by connecting them one by one and using **dmm-get list** command. After that we can pass the path to **dmm-get data** command like *dmm-get --path PATH data OPTIONS* but it takes a lot of typing. Using configurations may make life easier. One can do the following
 1. Connect first device (UT61E+) only and issue the command:
 ```
-python ut61xpy/ut61xp-get data -gps -f e.data -t UT61E+ --cfg-save ut61e.cfg
+python dmmpy/dmm-get data -gps -f e.data -t UT61E+ --cfg-save ut61e.cfg
 ```
 It will auto detect device, plot the data saving it to the file e.data, showing a progress and printing stats on termination. It will also create the configuration file ut61e.cfg. The *-t* option will set window title so we can tell which window shows data from which device.
 
 2. Disconnect first device and connect other device (UT61D+) and run the command:
 ```
-python ut61xpy/ut61xp-get data -gps -f d.data -t UT61D+ --cfg-save ut61d.cfg 
+python dmmpy/dmm-get data -gps -f d.data -t UT61D+ --cfg-save ut61d.cfg 
 ```
 The corresponding configuration will be saved to ut61d.cfg
 
 3. Now we can connect both devices and run some acquisition in parallel (in separate terminals):
 ```
-python ut61xpy/ut61xp-get data -c ut61d.cfg
-python ut61xpy/ut61xp-get data -c ut61e.cfg -a a.data
+python dmmpy/dmm-get data -c ut61d.cfg
+python dmmpy/dmm-get data -c ut61e.cfg -a a.data
 ```
 The first command will read data from UT61D+. The second command will acquire data from UT61E+ in DC+AC mode storing AC channel samples to a.data.
 
 4. One can even create specialized configuration file for DC+AC mode by modifying basic configuration:
 ```
-python ut61xpy/ut61xp-get data -c ut61e.cfg -a a.data --cfg-save acdc.cfg
+python dmmpy/dmm-get data -c ut61e.cfg -a a.data --cfg-save acdc.cfg
 ```
 Now one can just execute the following short command line to use DC+AC readout with dual plot graph:
 ```
-python ut61xpy/ut61xp-get data -c acdc.cfg
+python dmmpy/dmm-get data -c acdc.cfg
 ```
-Of cause the *./ut61xpy/ut61xp-get* invocation will work on Linux as well since *ut61xp-get* is executable script on this system.
+Of cause the *./dmmpy/dmm-get* invocation will work on Linux as well since *dmm-get* is executable script on this system.
 Note that to be able to combine measurements made by different devices you will probably have to use epoch time option (*-e*). Otherwise data samples originated from different devices may be read at different time even if they have the same time stamp (since its relative to acquisition start of the particular readout session).
 
 ## Configurations and device paths
@@ -255,10 +255,10 @@ The configuration tricks shown above work just because the auto-detected device 
 
 ## Using Bluetooth adapter
 
-Working with Bluetooth adapter conceptually is not different from using USB. Just add *-B/--bt* option right after *ut61xp-get* to force script to use BT adapter. Similar to USB use case the script is able to auto detect BT adapter provided that its powered on and no other adapters are in the accessible range. By means of using the *--cfg-save* option one can save the address of the adapter discovered (which plays the role of USB device path) for the subsequent reuse. One can specify BT address in the command line explicitly via *--path/--addr* option. Opening BT device by its address is significantly faster and more reliable than autodetecting it.
+Working with Bluetooth adapter conceptually is not different from using USB. Just add *-B/--bt* option right after *dmm-get* to force script to use BT adapter. Similar to USB use case the script is able to auto detect BT adapter provided that its powered on and no other adapters are in the accessible range. By means of using the *--cfg-save* option one can save the address of the adapter discovered (which plays the role of USB device path) for the subsequent reuse. One can specify BT address in the command line explicitly via *--path/--addr* option. Opening BT device by its address is significantly faster and more reliable than autodetecting it.
 
 ## Setting device-specific parameters
-Some devices need special settings not applicable to other device. There is a special command line option to setup such parameters *--param*. It should be followed by KEY=VAL pair. To set multiple parameters this option may be used multiple times like *--param KEY1=VAL1 --param KEY2=VAL2 ..*. To setup parameters in **ut61xp-start** [data acquisition launcher GUI](#data-acquisition-launcher) one should use *device parameters* field separating *key=value* pairs by comma. The following table lists all possible parameters and notes where they are applicable. Note that the parameter names are case-insensitive.
+Some devices need special settings not applicable to other device. There is a special command line option to setup such parameters *--param*. It should be followed by KEY=VAL pair. To set multiple parameters this option may be used multiple times like *--param KEY1=VAL1 --param KEY2=VAL2 ..*. To setup parameters in **dmm-start** [data acquisition launcher GUI](#data-acquisition-launcher) one should use *device parameters* field separating *key=value* pairs by comma. The following table lists all possible parameters and notes where they are applicable. Note that the parameter names are case-insensitive.
 
 | Parameter name | Meaning                                                          | Default         | Applicable to    |
 |----------------|------------------------------------------------------------------|-----------------|------------------|
@@ -279,9 +279,9 @@ Some devices need special settings not applicable to other device. There is a sp
 
 ## Working with other supported devices
 ### Specifying device model
-By default, the **ut61xp-get** tool expects the UT61X+ multimeter as the target device. To change this, one should use *-M/--model* option. In case device works via Bluetooth, the *-B* option must be provided with *-M/--model* option. Both options should be specified right after **ut61xp-get** in the command line. The required options for the particular model family are listed in the following table. The last column of the table shows corresponding model label used in **ut61xp-start** GUI frontend application, see [Working with GUI](#working-with-gui).
+By default, the **dmm-get** tool expects the UT61X+ multimeter as the target device. To change this, one should use *-M/--model* option. In case device works via Bluetooth, the *-B* option must be provided with *-M/--model* option. Both options should be specified right after **dmm-get** in the command line. The required options for the particular model family are listed in the following table. The last column of the table shows corresponding model label used in **dmm-start** GUI frontend application, see [Working with GUI](#working-with-gui).
 
-| Vendor  | Model family                                 | Command line options  | Model label in **ut61xp-start** UI |
+| Vendor  | Model family                                 | Command line options  | Model label in **dmm-start** UI |
 |---------|----------------------------------------------|-----------------------|------------------------------------|
 | UNI-T   | UT61B/D/E+                                   | -M UT61X+             | UT61X+ USB                         |
 |         | UT61B/D/E+ with UT-D07B Bluetooth adapter    | -M UT61X+ -B          | UT61X+ BT                          |
@@ -306,10 +306,10 @@ By default, the **ut61xp-get** tool expects the UT61X+ multimeter as the target 
 The INA226/228 chips are typically sold with shunt already soldered to the board. Yet there are some number of steps required before you can read data from them:
  - Choose I2C to USB adapter board. Currently supported boards are FT260 and CP2112.
  - Connect INA board to I2C USB adapter board by 4 wires. The GND and VCC signals provide power, SDA and SCL are for I2C bus to read the data.
- - Provide I2C adapter name to the tool as command line option like *--param i2c=CP2112* or by adding *i2c=CP2112* to the comma-separated list of key=val pairs in the *device parameters* field of **ut61xp-start** application window. This is not necessary if you are using the default FT260 adapter.
- - Setup shunt resistance either by command line option like *--param shunt=.015* or by adding corresponding key=val pair to the *device parameters* field of **ut61xp-start** application window. This is not necessary if you have a default 0.1 Ohm shunt or does not want to measure current.
+ - Provide I2C adapter name to the tool as command line option like *--param i2c=CP2112* or by adding *i2c=CP2112* to the comma-separated list of key=val pairs in the *device parameters* field of **dmm-start** application window. This is not necessary if you are using the default FT260 adapter.
+ - Setup shunt resistance either by command line option like *--param shunt=.015* or by adding corresponding key=val pair to the *device parameters* field of **dmm-start** application window. This is not necessary if you have a default 0.1 Ohm shunt or does not want to measure current.
 
-At this point you should be able to read current from the INA226/228 board and optionally read voltage from it as alternative measuring channel if you provide *-a/--alt-file* option or check *alternative channel output* field in **ut61xp-start** application window.
+At this point you should be able to read current from the INA226/228 board and optionally read voltage from it as alternative measuring channel if you provide *-a/--alt-file* option or check *alternative channel output* field in **dmm-start** application window.
 
 Several important things should be noted:
  - The INA module ground (GND) must not be left floating. You should connect it either to the ground of the circuit you are monitoring or to the IN- current measuring terminal. Otherwise you can damage the INA module.
@@ -328,10 +328,10 @@ The first readout mode is the default one. The last two modes are special since 
 
 Another possible use of the INA228 temperature sensor is shunt temperature compensation. To utilize it one can set *tempco* parameter (see [Setting device-specific parameters](#setting-device-specific-parameters)). After that the current readings will be multiplied by compensation factor 1 + (T - 25) \* tempco, where T is the chip temperature. This does not give you the perfect compensation though since T is not equal to the temperature of the shunt. Increasing the *tempco* to compensate the difference will improve the accuracy provided that the environment temperature is stable.
 
-The full scale shunt voltage measuring range of INA228 is ±163.84mV. It may be reduced by the factor of 4 improving measuring resolution by setting *range* parameter to 1. It can be done in command line by option *--param range=1* or by adding *range=1* to the comma-separated list of parameters in the *device parameters* field of **ut61xp-start** application window.
+The full scale shunt voltage measuring range of INA228 is ±163.84mV. It may be reduced by the factor of 4 improving measuring resolution by setting *range* parameter to 1. It can be done in command line by option *--param range=1* or by adding *range=1* to the comma-separated list of parameters in the *device parameters* field of **dmm-start** application window.
 
 ### Working with MCP3421 ADC boards
-To read the data from MCP3421 Analog to Digital Converter you need to connect it to I2C adapter board similar to the case of INA226/228 boards described above. The MCP3421 has single channel with 18 bits resolution which gives you 131072 counts with positive and negative signs. The ADC has full scale range from -2.048V yo +2.048V. The built in programmable gain amplifier (PGA) may be set to amplify signal by the factor of 2, 4 or 8 reducing full scale range accordingly. You can set PGA gain by specifying *gain* parameter either in command line or by option *--param gain=N* or by adding *gain=N* to the comma-separated list of parameters in the *device parameters* field of **ut61xp-start** application window. With maximum gain 8 the ADC has resolution of about 2µV. Therefore you can use it for measuring termocouple voltage in particular. The default value of the *gain* is 1 so that MCP3421 will use its full scale range of 2.048V.
+To read the data from MCP3421 Analog to Digital Converter you need to connect it to I2C adapter board similar to the case of INA226/228 boards described above. The MCP3421 has single channel with 18 bits resolution which gives you 131072 counts with positive and negative signs. The ADC has full scale range from -2.048V yo +2.048V. The built in programmable gain amplifier (PGA) may be set to amplify signal by the factor of 2, 4 or 8 reducing full scale range accordingly. You can set PGA gain by specifying *gain* parameter either in command line or by option *--param gain=N* or by adding *gain=N* to the comma-separated list of parameters in the *device parameters* field of **dmm-start** application window. With maximum gain 8 the ADC has resolution of about 2µV. Therefore you can use it for measuring termocouple voltage in particular. The default value of the *gain* is 1 so that MCP3421 will use its full scale range of 2.048V.
 
 The MCP3421 has differential input that gives you the possibility to measure negative signals while keeping input voltages within the power rails. Note that similar to INA226/228 case you should avoid inputs floating. They should always have predictable potential with respect to the ground. These potentials should always be kept within the power rails of the board. For example, while measuring termocouple voltage you can connect negative input to the board's ground. The USB isolation may be necessary to decouple system being measured from the computer reading the data.
 
@@ -341,7 +341,7 @@ To read the data from ADS1115 Analog to Digital Converter you need to connect it
  - input multiplexer that allows you to sample up to 4 input signals
  - configurable I2C bus address so you can attach up to 4 such devices to the same I2C adapter
 
-The input multiplexer configuration can be set by *mux* parameter either in command line or by option *--param mux=M* or by adding *mux=M* to the comma-separated list of parameters in the *device parameters* field of **ut61xp-start** application window. By default device is using its AIN0 as positive terminal and AIN1 as negative input voltage terminal. The following table illustrates possible values of the *mux* parameter and their meaning
+The input multiplexer configuration can be set by *mux* parameter either in command line or by option *--param mux=M* or by adding *mux=M* to the comma-separated list of parameters in the *device parameters* field of **dmm-start** application window. By default device is using its AIN0 as positive terminal and AIN1 as negative input voltage terminal. The following table illustrates possible values of the *mux* parameter and their meaning
 
 | mux parameter | positive terminal | negative terminal |
 |---------------|-------------------|-------------------|
@@ -370,21 +370,21 @@ The default value of the *gain* is 0 so that ADS1115 will use its full scale ran
 In case you are going to read alternative data channel you may configure its multiplexing and gain by specifying *amux* and *again* parameters. So you will be able to sample and plot two voltage sources connected to different ADS1115 inputs. The default value of *again* is 0 (full scale range of 6.144V). The default *amux* is 7 so you will sample AIN3 input relative to the ground.
 
 # Working with GUI
-The GUI workflow is built around **ut61xp-start** script that provides convenient UI for setting **ut61xp-get** options and launching data acquisition in separate processes. The single instance of **ut61xp-start** UI can launch any number of data acquisition processes working in parallel, saving data to separate files and showing collected data in their own data plot windows. The following figure illustrates using data acquisition GUI reading data from 3 multimeters simultaneously on Raspberry Pi5.
+The GUI workflow is built around **dmm-start** script that provides convenient UI for setting **dmm-get** options and launching data acquisition in separate processes. The single instance of **dmm-start** UI can launch any number of data acquisition processes working in parallel, saving data to separate files and showing collected data in their own data plot windows. The following figure illustrates using data acquisition GUI reading data from 3 multimeters simultaneously on Raspberry Pi5.
 
-![ut61xp-start tool collecting data from 3 multimeters on RPi5](/misc/rpi.png)
+![dmm-start tool collecting data from 3 multimeters on RPi5](/misc/rpi.png)
 
 ## Data acquisition launcher
-The **ut61xp-start** script opens window with controls providing convenient way of setting data acquisition and plotting options and launching data acquisition in separate windows as if they were opened by running **ut61xp-get** tool from command line. The launcher window consists of the following major parts:
+The **dmm-start** script opens window with controls providing convenient way of setting data acquisition and plotting options and launching data acquisition in separate windows as if they were opened by running **dmm-get** tool from command line. The launcher window consists of the following major parts:
  - the multimeter model selector
  - the data acquisition options (for ex. output file name)
  - the plot styling options (for ex. the plot title)
  - the acquisition start button
 
-Note that there are no options that don't have default values. So one can just choose spectrometer model and press start button. Initially the model list contains only 'unbounded' models. See [Working with other supported devices](#working-with-other-supported-devices) for the complete list of the supported models. Once the tool connects to the particular multimeter by autodetecting it, the 'bounded' model with particular USB path / BT address assigned is added to the list of models. So you can easily connect to the same multimeter later by choosing the particular bounded model. The full set of configured options is saved and restored whenever you select the particular model. Pressing Start button launches data acquisition process in separate window. This window has the same set of useful hot keys as described in [Plot window hotkeys](#plot-window-hotkeys) section. The data collected is being saved to the file with the path configured in the launcher window. By default the output file is located in 'data' folder next to the **ut61xp-start** tool in subfolder with current date as the name. Its name is made by concatenation of the start time and multimeter model name. The real path to the last created data file is shown on **ut61xp-start** tool window right below the file path template. To stop data acquisition one can just close the acquisition window.
+Note that there are no options that don't have default values. So one can just choose spectrometer model and press start button. Initially the model list contains only 'unbounded' models. See [Working with other supported devices](#working-with-other-supported-devices) for the complete list of the supported models. Once the tool connects to the particular multimeter by autodetecting it, the 'bounded' model with particular USB path / BT address assigned is added to the list of models. So you can easily connect to the same multimeter later by choosing the particular bounded model. The full set of configured options is saved and restored whenever you select the particular model. Pressing Start button launches data acquisition process in separate window. This window has the same set of useful hot keys as described in [Plot window hotkeys](#plot-window-hotkeys) section. The data collected is being saved to the file with the path configured in the launcher window. By default the output file is located in 'data' folder next to the **dmm-start** tool in subfolder with current date as the name. Its name is made by concatenation of the start time and multimeter model name. The real path to the last created data file is shown on **dmm-start** tool window right below the file path template. To stop data acquisition one can just close the acquisition window.
 
 ## Working on low resolution screens
-The **ut61xp-start** has command line option *--tight* that makes it appearance more compact to better fit low resolution screens.
+The **dmm-start** has command line option *--tight* that makes it appearance more compact to better fit low resolution screens.
 
 ## Working with standalone executables
 On Windows the *standalone/build_sfx.bat* script builds standalone executables in *standalone/dist/dmm-tools* folder. It then creates a self extracting archive *standalone/dist/dmm-tools-{VERSION}.exe* provided that you have 7-Zip installed. This archive can be extracted to any folder on the target system including the flash drive. The only requirement for the folder where the executable files will be placed is the ability to write to it. Since the application is 'portable' it tends to store all its files next to the executable. The *Program Files* folder on Windows is usually write-protected, so you should choose a different location to store executable files.
@@ -406,35 +406,35 @@ pyinstaller dmm-tools.spec --noconfirm
 Note that the resulting size of these executables on Linux is drastically larger than on Windows which makes this installation method practically meaningless.
 
 ## Other UI tools
-There are several other tools that are actually wrappers around **ut61xp-get** tool. They make using particular functionality easy especially on Windows as described in the following table.
+There are several other tools that are actually wrappers around **dmm-get** tool. They make using particular functionality easy especially on Windows as described in the following table.
 | Tools           |  What it does  |
 |-----------------|----------------|
-| **ut61xp-plot** | Plots one or more files given as command line arguments similar to **ut61xp-get plot** command. On Windows one can drag and drop one or more files to this tool to plot them.       |
-| **ut61xp-hist** | Plots histogram for the file passed as command line arguments similar to **ut61xp-get hist** command. On Windows one can drag and drop file to this tool to plot its histogram.     |
-| **ut61xp-stat** | Prints statistics for the file passed as command line arguments similar to **ut61xp-get stat** command. On Windows one can drag and drop file to this tool to print its statistics. |
+| **dmm-plot** | Plots one or more files given as command line arguments similar to **dmm-get plot** command. On Windows one can drag and drop one or more files to this tool to plot them.       |
+| **dmm-hist** | Plots histogram for the file passed as command line arguments similar to **dmm-get hist** command. On Windows one can drag and drop file to this tool to plot its histogram.     |
+| **dmm-stat** | Prints statistics for the file passed as command line arguments similar to **dmm-get stat** command. On Windows one can drag and drop file to this tool to print its statistics. |
 
-For convenience you can associate .dat files with **ut61xp-plot** tool. To do it right click such file, choose 'Open with', then select 'Choose another app', then click 'Choose an app from your PC' at the bottom of the list, then select **ut61xp-plot** tool in the file chooser and finally click 'Always' button. Now the **ut61xp-plot** tool will plot .dat file every time you double click it.
+For convenience you can associate .dat files with **dmm-plot** tool. To do it right click such file, choose 'Open with', then select 'Choose another app', then click 'Choose an app from your PC' at the bottom of the list, then select **dmm-plot** tool in the file chooser and finally click 'Always' button. Now the **dmm-plot** tool will plot .dat file every time you double click it.
 
 ## Special files and folders
-The **ut61xp-start** tool creates several files and directories next to executable to save data, logs and other execution artifacts. By default only data directory is visible. It contains sub-folders named by creation date with data files having time and multimeter model as parts of their names by default. The user may change the name of the output file in **ut61xp-start** window if necessary. There are several other files and folders with names started with dot. One should use *ls* with *-a* switch to see them on Linux or enable 'Show hidden and system files' option in 'System/Advanced/File Explorer' settings on Windows. They are listed in the following table.
+The **dmm-start** tool creates several files and directories next to executable to save data, logs and other execution artifacts. By default only data directory is visible. It contains sub-folders named by creation date with data files having time and multimeter model as parts of their names by default. The user may change the name of the output file in **dmm-start** window if necessary. There are several other files and folders with names started with dot. One should use *ls* with *-a* switch to see them on Linux or enable 'Show hidden and system files' option in 'System/Advanced/File Explorer' settings on Windows. They are listed in the following table.
 | Path relative to executable location |  Description                                 |
 |--------------------------------------|----------------------------------------------|
 | data/                                | Folder for storing output data (by default)  |
-| .config                              | File storing models configuration as json dictionary. One can drop it if something goes wrong. It will be recreated automatically on next **ut61xp-start** tool invocation. |
-| .cfg/                                | Folder storing configuration files for recent acquisition runs with names constructed from multimeter model name and communication protocol like 'OWON_BT'. So one can invoke acquisition with the same settings from command line by executing **ut61xp-get data -c .cfg/CONFIG_NAME** |
-| .logs/                               | Folder with **ut61xp-start** tool execution logs. One can examine them should something goes wrong or send to the author for analysis. |
+| .config                              | File storing models configuration as json dictionary. One can drop it if something goes wrong. It will be recreated automatically on next **dmm-start** tool invocation. |
+| .cfg/                                | Folder storing configuration files for recent acquisition runs with names constructed from multimeter model name and communication protocol like 'OWON_BT'. So one can invoke acquisition with the same settings from command line by executing **dmm-get data -c .cfg/CONFIG_NAME** |
+| .logs/                               | Folder with **dmm-start** tool execution logs. One can examine them should something goes wrong or send to the author for analysis. |
 | .internal/                           | Folder containing executable components such as a shared libraries and compiled Python code. |
 
 ## Troubleshooting
-If something goes wrong you may consider looking to the logs and/or add *--verbose* option to **ut61xp-get** and **ut61xp-start** command line.
+If something goes wrong you may consider looking to the logs and/or add *--verbose* option to **dmm-get** and **dmm-start** command line.
 
 # Known issues and solutions
 
-### Unable to connect to Bluetooth multimeter after closing **ut61xp-start** application
-The multimeter becomes available for reconnect after dropping of the previous connection. The problem here is that its the operating system that maintains connection. It may not drop connection if application that initiated it was terminated not gracefully, especially on Linux. So the multimeter thinks its still connected to already terminated application. The problem occurs if one close **ut61xp-start** window while some data acquisition windows are still open. In case all such windows are closed before closing **ut61xp-start** window the Bluetooth connections are terminated as expected.
+### Unable to connect to Bluetooth multimeter after closing **dmm-start** application
+The multimeter becomes available for reconnect after dropping of the previous connection. The problem here is that its the operating system that maintains connection. It may not drop connection if application that initiated it was terminated not gracefully, especially on Linux. So the multimeter thinks its still connected to already terminated application. The problem occurs if one close **dmm-start** window while some data acquisition windows are still open. In case all such windows are closed before closing **dmm-start** window the Bluetooth connections are terminated as expected.
 
-### Data was not saved to the output file after closing **ut61xp-start** application
-Closing **ut61xp-start** window while acquisition is still active terminates acquisition process without saving anything. Therefore, if you need the collected data, please close the acquisition plot window first.
+### Data was not saved to the output file after closing **dmm-start** application
+Closing **dmm-start** window while acquisition is still active terminates acquisition process without saving anything. Therefore, if you need the collected data, please close the acquisition plot window first.
 
 ### Aneng (ZOTEK/BSIDE) multimeter is powering off automatically after some time while data collection is running
 The auto power off feature powers off device after 15 min of inactivity. The Aneng (ZOTEK/BSIDE) multimeters don't consider Bluetooth connection as 'activity'. To disable auto powering off you should press and hold the SEL button while powering on multimeter and selecting desired mode with mode dial. The SEL button should be held until you hear four beeps. The auto power off feature will be disabled until the next power on. With power off disabled the multimeter will still emit alarming beeps periodically but will not power off.
@@ -443,7 +443,7 @@ The auto power off feature powers off device after 15 min of inactivity. The Ane
 This happens because Windows flags all unsigned executables downloaded from the web as untrusted. There are two ways to overcome it. You can click *More info* and press *Run anyway* button. Otherwise you can clean this flag in advance by right clicking the executable and checking *Unblock* on the *General tab* of the file *Properties*.
 
 ### Unable to find OWON desktop multimeter or programmable power source on Linux
-There are several system services used to be installed by default that may open connected device preventing its discovery by **ut61xp-get** or **ut61xp-start** tools. Try to the execute the following commands in the terminal and reconnect your device.
+There are several system services used to be installed by default that may open connected device preventing its discovery by **dmm-get** or **dmm-start** tools. Try to the execute the following commands in the terminal and reconnect your device.
 ```
 sudo apt remove brltty
 sudo systemctl stop ModemManager
@@ -457,14 +457,14 @@ To fix it find the adapter in Device Manager / Human Interface Devices (VID = 0x
 Most probably you have left INA module ground floating while measuring current. Connecting only two current terminals of the INA module to electric circuit while measuring current seems logical, similar to using a digital multimeter. However, due to differences in the measuring circuits, this results in very high noise levels during measurement and in some cases may even damage the INA module. Its strongly recommended to attach the INA module ground either to the ground of the circuit being measured or connect it directly to the negative current terminal. Its also strongly recommended to add USB isolation between you computer and I2C USB adapter board.
 
 ### Unable to open device USB port on Linux
-An attempt to access the device as plain user may fail on Linux due to restrictive permissions. To be able to access the USB serial port you either have to run the **ut61xp-get** or **ut61xp-start** tool as a root or add iself to *dialout* group:
+An attempt to access the device as plain user may fail on Linux due to restrictive permissions. To be able to access the USB serial port you either have to run the **dmm-get** or **dmm-start** tool as a root or add iself to *dialout* group:
 ```
 sudo usermod -aG dialout $USER
 ```
 You have to re-login or reboot to apply new group membership properly. Note that this approach does not work with HID devices (see below).
 
 ### Unable to access USB HID device on Linux
-An attempt to access the HID device as plain user may fail on Linux due to restrictive permissions. To be able to access the USB HID device you either have to run the **ut61xp-get** or **ut61xp-start** tool as a root or execute the following:
+An attempt to access the HID device as plain user may fail on Linux due to restrictive permissions. To be able to access the USB HID device you either have to run the **dmm-get** or **dmm-start** tool as a root or execute the following:
 ```
 sudo groupadd -r hidaccess
 sudo usermod -aG hidaccess $USER
@@ -475,7 +475,7 @@ You have to re-login or reboot to apply new group membership properly.
 # Appendixes
 
 ## Adding your own device
-To add new device you should implement its adapter class inherited from *Device* and *BTMixin* or *USBMixin* from **device.py** (see [Base classes](#base-classes) below). Then the class type should be added to *_supported_devices* from **ut61xp-get** and that's it.
+To add new device you should implement its adapter class inherited from *Device* and *BTMixin* or *USBMixin* from **device.py** (see [Base classes](#base-classes) below). Then the class type should be added to *_supported_devices* from **dmm-get** and that's it.
 In case the device is using already supported protocol but having different USB VIP/PID or Bluetooth device name, one can try to connect to it by tweaking these parameters by *--param vid=..*, *--param pid=..*, *--param btname=..* command line options.
 
 ## Integration with your own code
@@ -490,7 +490,7 @@ The *Device* class (from adapters/device.py) is the ancestor of all multimeter a
 
 The *USBMixin* and *BTMixin* classes are used as a second base class for USB and Bluetooth spectrometer adapters respectively. They provide methods for device discovery and adapter instance creation. The *list_paths* and *list_addrs* methods return list of USB device paths and Bluetooth device addresses that may be related to corresponding devices. The *open_path* and *open_addr* methods create device adapter instance given USB path or Bluetooth address respectively. The *open* method auto detects the device and creates its adapter instance provided that there is a single such device connected to USB or reachable via Bluetooth.
 
-The *SCPIDevice* is specialized base class for multimeters and other devices using SCPI protocol for communicating with the host. It implements several methods that can be used to directly call SCPI API of the particular device. The *scpi_send* method sends SCPI command to the device, the *scpi_receive* method reads the response from the device. The *scpi_call* method just does *scpi_send* and *scpi_receive* calls and returns the response. The *scpi_query* method invokes *scpi_call* and converts the response to the floating point value. We will consider using this methods for accessing SCPI device not supported by **ut61xp-get** and **ut61xp-start** tools in the example of [working with OWON programmable electronic load](#working-with-owon-programmable-electronic-load).
+The *SCPIDevice* is specialized base class for multimeters and other devices using SCPI protocol for communicating with the host. It implements several methods that can be used to directly call SCPI API of the particular device. The *scpi_send* method sends SCPI command to the device, the *scpi_receive* method reads the response from the device. The *scpi_call* method just does *scpi_send* and *scpi_receive* calls and returns the response. The *scpi_query* method invokes *scpi_call* and converts the response to the floating point value. We will consider using this methods for accessing SCPI device not supported by **dmm-get** and **dmm-start** tools in the example of [working with OWON programmable electronic load](#working-with-owon-programmable-electronic-load).
 
 ### Code examples
 The code examples below illustrate techniques that can be used while working with various devices.
@@ -498,7 +498,7 @@ The code examples below illustrate techniques that can be used while working wit
 #### Reading from OWON Bluetooth multimeter
 The following code will read data from OWON Bluetooth multimeter continuously. It will discover the multimeter automatically provided that you have single one nearby.
 ```python
-from ut61xpy.adapters.owon import OwonBtDevice
+from dmmpy.adapters.owon import OwonBtDevice
 
 if dev := OwonBtDevice.open():
     with dev:
@@ -513,7 +513,7 @@ if dev := OwonBtDevice.open():
 #### Reading from Aneng Bluetooth multimeter with known address
 If you know the Bluetooth device mac address, you can open it faster without scanning. It will also work if you have several multimeters. The following code will read Aaneng AN9002 or compatible ZOTEK/BSIDE ZT-300AB with particular address.
 ```python
-from ut61xpy.adapters.aneng import AnengBtDevice
+from dmmpy.adapters.aneng import AnengBtDevice
 
 if dev := AnengBtDevice.open_addr('C4:A9:B8:3A:5B:A2'):
     with dev:
@@ -531,7 +531,7 @@ will set mode to DC voltage with 5V range and then read samples continuously two
 sense in such case. The OWON multimeter does not refresh returned value faster than several times per second even if the sampling rate is much higher on specs.
 ```python
 import time
-from ut61xpy.adapters.scpi import SCPIDmm
+from dmmpy.adapters.scpi import SCPIDmm
 
 if dev := SCPIDmm.open():
     with dev:
@@ -550,7 +550,7 @@ While working with OWON programmable power source, you can not only read voltage
 The following code will configure OWON power source, turn on its output, wait 2 seconds, print current and voltage and switch output off.
 ```python
 import time
-from ut61xpy.adapters.scpi import SCPIPowerSource
+from dmmpy.adapters.scpi import SCPIPowerSource
 
 if dev := SCPIPowerSource.open():
     with dev:
@@ -569,7 +569,7 @@ Note that there are also VOLTage:LIMit and CURRent:LIMit parameters. If any of t
 #### Reading voltage and current from FNIRSI USB tester
 Similarly to programmable power source, you can read voltage and current from FNIRSI USB tester with the following code:
 ```python
-from ut61xpy.adapters.fnirsi import FNB58Usb
+from dmmpy.adapters.fnirsi import FNB58Usb
 
 if dev := FNB58Usb.open():
     with dev:
@@ -588,8 +588,8 @@ To communicate with FNB58 via Bluetooth one can just replace FNB58Usb -> FNB58Bt
 #### Reading data from several devices simultaneously
 The next code example illustrates reading data from Aneng and OWON Bluetooth multimeters simultaneously.
 ```python
-from ut61xpy.adapters.aneng import AnengBtDevice
-from ut61xpy.adapters.owon  import OwonBtDevice
+from dmmpy.adapters.aneng import AnengBtDevice
+from dmmpy.adapters.owon  import OwonBtDevice
 
 devs = (AnengBtDevice.open(), OwonBtDevice.open())
 
@@ -612,11 +612,11 @@ for d in devs:
 ```
 
 #### Working with OWON programmable electronic load
-The OWON OEL series electronic loads are not directly supported by **ut61xp-get** and **ut61xp-start** tools, but you can interact with them using your own code. The following code will open connection to such device
+The OWON OEL series electronic loads are not directly supported by **dmm-get** and **dmm-start** tools, but you can interact with them using your own code. The following code will open connection to such device
 given the port name ('COM42'). Then it will configure it in constant current mode and run test sequence linearly increasing load current and printing measured current and voltage. The code is tested with OEL1515 model.
 ```python
 import time
-from ut61xpy.adapters.scpi import SCPIDevice
+from dmmpy.adapters.scpi import SCPIDevice
 
 CMD_DELAY  = .1
 STEP_DELAY = .5
@@ -649,7 +649,7 @@ if dev := SCPIDevice.open_path('COM42'):
 The next code example illustrates interfacing with electronic load in similar setup but with OWON desktop multimeter (XDM1041, XDM1241) measuring current between power source and electronic load. The script prints current set, current reported by electronic load and the current error with respect to the value reported by multimeter. Note that unlike other examples the code uses SCPIDevice class and its scpi_query method for interacting with multimeter instead of generic query_raw/get_value API.
 ```python
 import time
-from ut61xpy.adapters.scpi import SCPIDevice
+from dmmpy.adapters.scpi import SCPIDevice
 
 CMD_DELAY  = .1
 STEP_DELAY = 1.5
@@ -696,7 +696,7 @@ While working with INA current & voltage monitors from your scripts its necessar
 
 The following code example illustrates reading current and voltage from INA226 module with 15mOhm shunt via CP2112 adapter.
 ```python
-from ut61xpy.adapters.ina import INA226Device, CP2112Adapter
+from dmmpy.adapters.ina import INA226Device, CP2112Adapter
 
 if dev := INA226Device.set_i2c_adapter(CP2112Adapter).open():
     with dev:
@@ -715,7 +715,7 @@ if dev := INA226Device.set_i2c_adapter(CP2112Adapter).open():
 #### Reading temperature with external K-termocouple connected to INA228
 The INA228 provides addition temperature measuring capabilities. One can even connect K-type termocouple to it instead of the shunt. The following code example illustrates reading voltage, chip temperature and termocouple temperature with such setup. It also illustrates using I2C adapter GPIO by blinking green LED on the CP2112 adapter board.
 ```python
-from ut61xpy.adapters.ina import INA228Device, CP2112Adapter
+from dmmpy.adapters.ina import INA228Device, CP2112Adapter
 import cp2112
 
 led_pin = cp2112.GPIO_LED_GREEN
@@ -742,9 +742,9 @@ if dev := INA228Device.set_i2c_adapter(CP2112Adapter).open():
 The I2CDevice base class adds an important method to its descendants - attach_to_i2c_bus. It creates device instance by attaching it to existing I2C bus given the initialized instance of another 'master' device already sitting on the bus. No USB device discovery is necessary for the new device creation. It just uses already initialized USB device of the master. This method is useful in case you are going to read data from multiple devices sharing the same I2C bus and USB adapter. The following code example illustrates reading the data from 
 ADS1115 and MCP3421 devices sharing the same bus.
 ```python
-from ut61xpy.adapters.ads1115 import ADS1115Device
-from ut61xpy.adapters.mcp3421 import MCP3421Device
-from ut61xpy.adapters.i2c import FT260Adapter
+from dmmpy.adapters.ads1115 import ADS1115Device
+from dmmpy.adapters.mcp3421 import MCP3421Device
+from dmmpy.adapters.i2c import FT260Adapter
 
 if dev1 := ADS1115Device.set_i2c_adapter(FT260Adapter).open():
     with dev1:
@@ -770,8 +770,8 @@ By attaching external multiplexer to ADS1115 you can create device able to measu
 
 The example schematic uses resistor dividers to translate input voltage either positive or negative to the range acceptable for ADS1115 (within its power rails). The following code example illustrates sampling input voltages with such device:
 ```python
-from ut61xpy.adapters.ads1115 import ADS1115Device
-from ut61xpy.adapters.ads1115_mux import *
+from dmmpy.adapters.ads1115 import ADS1115Device
+from dmmpy.adapters.ads1115_mux import *
 
 if dev := ADS1115Device.open():
     with dev:
@@ -789,7 +789,7 @@ See [ads1115_mux.py](adapters/ads1115_mux.py) for more implementation details. N
 The big advantage of FT260 USB adapter is the possibility to use its UART port in parallel with I2C bus operation. The UART has its own HID device instance so its completely dependent. The only peculiarity that should be kept in mind is the low receiver queue capacity. Therefore the port should be read frequently to avoid data loss. The ft260_uart.py module implements the dedicated receiver class queering data received by UART in separate thread. The following code fragment illustrates using FT260 module UART port to transmit message and receive it back having RX-TX pins interconnected.
 ```python
 import time
-from ut61xpy.adapters.ft260_uart import find_uart, uart_init, uart_tx, UARTReceiver
+from dmmpy.adapters.ft260_uart import find_uart, uart_init, uart_tx, UARTReceiver
 
 if dev := find_uart():
     uart_init(dev, 19200)
@@ -808,7 +808,7 @@ One should connect NF0 pin to GND to be able to use UART and I2C at the same tim
 If you don't need exceptional precision, then all multimeters with 6000 counts and more will give you reasonably good results in any mode except for the current measuring. Here we will consider why the current measuring mode is so demanding and why popular UNI-T multimeters are actually the least usable models for this task.
 
 ### Why measuring current is the most demanding task
-The multimeter does not measure current directly. It does measure voltage across current sensing resistor aka *shunt*. This voltage is effectively subtracted from the voltage in the net where you are measuring current. Suppose you are interesting in the current being consumed by microcontroller powered from 3.3V. If the voltage across the shunt is 0.5V then only 2.7V is left for microcontroller. This may affect it seriously reducing the current or even prevent microcontroller from working normally. Therefore, it is generally not desirable for the shunt voltage to exceed 100mV, which can be considered safe and should keep the current disturbance level at 3% (0.1/3.3). In practice many multimeters have full scale voltage across their shunts larger than that. For comparison I have made a [table](https://github.com/olegv142/ut61xpy/blob/main/misc/current_ranges.md) listing shunt resistance and full scale voltage for various multimeters including ones without PC interface, with manual ranges and even old analog multimeters with moving physical needle as display device.
+The multimeter does not measure current directly. It does measure voltage across current sensing resistor aka *shunt*. This voltage is effectively subtracted from the voltage in the net where you are measuring current. Suppose you are interesting in the current being consumed by microcontroller powered from 3.3V. If the voltage across the shunt is 0.5V then only 2.7V is left for microcontroller. This may affect it seriously reducing the current or even prevent microcontroller from working normally. Therefore, it is generally not desirable for the shunt voltage to exceed 100mV, which can be considered safe and should keep the current disturbance level at 3% (0.1/3.3). In practice many multimeters have full scale voltage across their shunts larger than that. For comparison I have made a [table](https://github.com/olegv142/dmmpy/blob/main/misc/current_ranges.md) listing shunt resistance and full scale voltage for various multimeters including ones without PC interface, with manual ranges and even old analog multimeters with moving physical needle as display device.
 
 ### Whats wrong with modern multimeters
 Typically all multimeters have ranges with upper limits separated by a decade. Old multimeters have corresponding shunt resistances separated by decade as well. So if you hit the upper limit of the current range you may switch to the next range where the shunt resistance and so the voltage becomes 10 times smaller. The modern DMM simplify this schema by grouping sub-ranges into the modes (µA, mA, A) each with its own shunt. Each mode typically have two sub-ranges so that the shunt resistances are separated by two decades. If you hit the upper limit of the smaller sub-range, then you may switch to upper sub-range but this does not change the shunt voltage since both sub-ranges are using the same shunt. If the shunt voltage becomes too high, then the only option you have is to reduce it by the factor of 100 by switching to the upper mode, for example from mA to A. This approach places high demands on the resolution of the shunt voltage measurement.
@@ -829,4 +829,4 @@ Surprisingly there are no multimeter model that works well in all its measuring 
 2. Another UNI-T model, the UT60BT has interesting feature - the recoverable PTC fuse in µA socket. It looks convenient but adds 3.3 kOhm to the shunt resistance which is only 45 Ohm. This makes it absolutely unusable for measuring small currents. To complement it, the A mode has a dead band from -5mA to +5mA. So its hard to recommend it for measuring current in any range despite excellent 1µV voltage measuring resolution. The voltage mode is also spoiled by dead band from -10 µV to +10 µV. Therefore I would say its the least usable device of all.
 
 ### The importance of the fuse resistance
-The above discussion of UT60BT multimeter demonstrates that the resistance of the fuse may affect the overall resistance across current and common terminals significantly. Even for the melting fuse commonly used in mA terminal circuit its about 0.6 Ohm which is not small compared to the typical shunt resistance of 1 Ohm. The fuse resistance cannot be made smaller since it should be able to produce enough heat to melt itself. Therefore actual resistance and so the voltage drop is always higher than the values shown in the comparison [table](https://github.com/olegv142/ut61xpy/blob/main/misc/current_ranges.md).
+The above discussion of UT60BT multimeter demonstrates that the resistance of the fuse may affect the overall resistance across current and common terminals significantly. Even for the melting fuse commonly used in mA terminal circuit its about 0.6 Ohm which is not small compared to the typical shunt resistance of 1 Ohm. The fuse resistance cannot be made smaller since it should be able to produce enough heat to melt itself. Therefore actual resistance and so the voltage drop is always higher than the values shown in the comparison [table](https://github.com/olegv142/dmmpy/blob/main/misc/current_ranges.md).
