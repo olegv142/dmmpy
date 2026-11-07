@@ -45,7 +45,10 @@ PARITY_NONE = 0
 PARITY_ODD  = 1
 PARITY_EVEN = 2
 
-def uart_init(dev, baud_rate: int, parity: int = PARITY_NONE, flow_ctrl: int = FLOW_CTL_NONE):
+STPBIT_ONE = 0
+STPBIT_TWO = 2
+
+def uart_init(dev, baud_rate: int, parity: int = PARITY_NONE, stop_bits: int = STPBIT_ONE, flow_ctrl: int = FLOW_CTL_NONE):
     """Initialize UART given baud rate and parity"""
     dev.set_nonblocking(True)
     dev.send_feature_report([0xA1, 0x40]) # reset UART
@@ -54,7 +57,7 @@ def uart_init(dev, baud_rate: int, parity: int = PARITY_NONE, flow_ctrl: int = F
             *struct.pack('<I', baud_rate),
             8, # data bits
             parity,
-            0, # one stop bit
+            stop_bits,
             0  # no break
         ])
 
