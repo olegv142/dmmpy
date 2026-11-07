@@ -127,6 +127,9 @@ def i2c_probe(dev, address: int) -> bool:
 #
 # GPIO control API
 #
+# Note that GPIO pins are multiplexed dynamically. For example, one can set IO3/SCL pin to low.
+# It will go high on I2C transaction start and go back to low on transaction completion.
+#
 
 CmdGPIOSetup = 0xCC
 
@@ -291,6 +294,7 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG)
     dev = find_device()
+    assert dev
     i2c_init(dev)
     test_scan(dev)
     #test_gpio_02(dev)
