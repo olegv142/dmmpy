@@ -1,15 +1,10 @@
-# A cross-platform tool for recording and plotting digital multimeter data, supporting many popular multimeters from UNI-T, OWON, ANENG, ZOTEK, BSIDE, FNIRSI USB testers, INA226/228 current and voltage monitors, as well as several popular ADC boards via USB adapter.
+# A cross-platform tool for recording and plotting digital multimeter data, supporting variety of popular multimeters, FNIRSI USB testers, INA226/228 current and voltage monitors, as well as several popular ADC boards via USB adapters.
 
-This repository provides simple alternative to vendor data collection programs. It works uniformly on Windows, Linux and MacOS. One can use it either from command line or GUI. Since the code is written in python it may be easily incorporated onto your complex measuring or automation system. 
-
-The project was started as robust and simple tool for reading data from UNI-T UT61E+ multimeters. Since then the number of other multimeter and USB tester models were supported and the project was extended with the following goals in mind:
- - keep code as small and simple as possible
- - support for USB and Bluetooth communication channels
- - support for dual channel reading and plotting (DC+AC mode of UT61E+ for ex.)
- - seamless working on Windows, Linux and MacOS
- - convenient working with several devices simultaneously
+This repository provides simple alternative to vendor data collection programs. It works uniformly on Windows, Linux and MacOS. One can use it either from command line or GUI. Since the code is written in python it may be easily incorporated onto your complex measuring or automation system. The project provides:
  - single CLI tool (**dmm-get**) for data collection and visualization
  - simple GUI frontend application (**dmm-start**) with the same capabilities as CLI tool
+ - support for USB and Bluetooth communication channels
+ - support for several popular ADC boards with I2C interface connected via USB adapter
  - ease of adding new multimeter models
  - ease of reuse in other projects
 
@@ -47,14 +42,26 @@ The Zotek/Aneng multimeters use display segment based encoding for BT communicat
 ### FNIRSI USB testers
 FNIRSI produces a line of USB testers capable of measuring USB bus voltage, load current and some other parameters. The tool supports reading USB bus current and optionally voltage in alternative measuring channel. Currently supported devices are FNAC28, FNB48P, FNB58 and FNB-C2. The data can be read either via USB or Bluetooth connection (if supported by device). While Bluetooth is convenient the USB connection provides significantly better resolution and reliability.
 
-### INA226/228 current & voltage monitor boards
-The INA226 and INA228 are high precision digital current and voltage monitor integrated circuits manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of additional USB to HID adapter. There are two such adapter boards supported. The first one is based on FTDI FT260 chip. Another one is based on Silicon Labs CP2112 chip. These are inexpensive boars sold by many manufacturers. You only have to connect INA board with USB HID adapter board by 4 wires (GND, VCC, SDA, SCL). After that you will have the precision device for measuring current and voltage at the same time. The INA226 is able to deliver 64k counts while INA228 have 1M counts. Both can be read at the rate of around 10 samples per second. The INA228 module provides current measuring resolution outperforming by an order of magnitude the capabilities of any other multimeter at the fraction of their price. Besides at has precision on-chip temperature sensor. By connecting K-type termocouple instead of the current shunt one can utilize INA228 for temperature measuring in the range from -200°C to 1372°C with high resolution. See [Working with INA226/228 current & voltage monitors](#working-with-ina226228-current--voltage-monitors) for more details.
+### I2C devices connected via USB adapter
+The tool supports several popular current/voltage monitor and analog to digital converters (ADC) with I2C interface. The I2C or Inter Integrated Circuit bus is convenient since it uses minimal connections (2 wires + power) and has a wide range of available devices and adapters sold as ready to use modules by many manufacturers. The tool supports three I2C-to-USB adapters that can be used to connect I2C devices to your computer. They are selected since they are readily available and don't require any driver installations.
 
-### MCP3421 18-bit ADC
-This is inexpensive Analog to Digital Converter chip manufactured by Microchip. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of additional USB to HID adapter. There are two such adapter boards supported. The first one is based on FTDI FT260 chip. Another one is based on Silicon Labs CP2112 chip. These are inexpensive boars sold by many manufacturers. You only have to connect MCP3421 board with USB HID adapter board by 4 wires (GND, VCC, SDA, SCL). The MCP3421 is able to measure voltage in the range -2.048V .. +2.048V with resolution down to ~2µV.
+##### Silicon Labs CP2112 adapter
+This is the inexpensive board supporting I2C and generic IO.
 
-### ADS1115 16-bit ADC
-This is inexpensive Analog to Digital Converter chip manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of additional USB to HID adapter. There are two such adapter boards supported. The first one is based on FTDI FT260 chip. Another one is based on Silicon Labs CP2112 chip. These are inexpensive boars sold by many manufacturers. You only have to connect ADS1115 board with USB HID adapter board by 4 wires (GND, VCC, SDA, SCL). The ADS1115 is able to measure voltages with resolution down to ~8µV. It has convenient multiplexer fabric able to choose from its four inputs. It may be handy while sampling sequentially several voltage sources by switching them from your python script.
+##### FTDI FT260 adapter
+This board supports I2C, generic IO and serial port. It also slightly faster than CP2112.
+
+##### CH347T adapter
+This is the fastest and most versatile USB adapter board. It supports I2C, generic IO, serial port and SPI. The SPI or Serial Peripheral Interface is another type of bus used by ADC devices. In contrast to I2C it uses at least 2 times more wires and less convenient to use. So the tool does not support it. However, an API for using SPI via the CH347T adapter is present in the repository. It can be used in your own Python code.
+
+#### INA226/228 current & voltage monitor boards
+The INA226 and INA228 are high precision digital current and voltage monitor integrated circuits manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect the monitor board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The INA226 is able to deliver 64k counts while INA228 have 1M counts. Both can be read at the rate of around 10 samples per second. The INA228 module provides current measuring resolution outperforming by an order of magnitude the capabilities of any other multimeter at the fraction of their price. Besides at has precision on-chip temperature sensor. By connecting K-type termocouple instead of the current shunt one can utilize INA228 for temperature measuring in the range from -200°C to 1372°C with high resolution. See [Working with INA226/228 current & voltage monitors](#working-with-ina226228-current--voltage-monitors) for more details.
+
+#### MCP3421 18-bit ADC
+This is inexpensive Analog to Digital Converter chip manufactured by Microchip. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect MCP3421 board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The MCP3421 is able to measure voltage in the range -2.048V .. +2.048V with resolution down to ~2µV.
+
+#### ADS1115 16-bit ADC
+This is inexpensive Analog to Digital Converter chip manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect ADS1115 board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The ADS1115 is able to measure voltages with resolution down to ~8µV. It has convenient multiplexer fabric able to choose from its four inputs. It may be handy while sampling sequentially several voltage sources by switching them from your python script.
 
 ## Installation
 The installation basically involves three steps - getting the source, installing python and installing required packages. Windows users have convenient alternative of using [portable binaries](#using-portable-binaries).
@@ -266,7 +273,7 @@ Some devices need special settings not applicable to other device. There is a sp
 | vid, pid       | The USB VID, PID numbers in case you need to change default ones | device specific | USB device       |
 | btname         | Bluetooth device name in case you need to change default one     | device specific | BT device        |
 | baud           | The USB CDC device serial baud rate                              | 115200          | USB CDC device   |
-| i2c            | I2C to USB adapter for INA device {FT260,CP2112}                 | FT260           | I2C device       |
+| i2c            | I2C to USB adapter for INA device {FT260,CP2112,CH347T}          | FT260           | I2C device       |
 | addr           | I2C address                                                      | device specific | I2C device       |
 | shunt          | Shunt resistance for INA current & voltage monitors              | 0.1 Ohm         | INA226/228       |
 | range          | INA228 shunt voltage range {0,1}                                 | 0               | INA228           |
@@ -304,7 +311,7 @@ By default, the **dmm-get** tool expects the UT61X+ multimeter as the target dev
 
 ### Working with INA226/228 current & voltage monitors
 The INA226/228 chips are typically sold with shunt already soldered to the board. Yet there are some number of steps required before you can read data from them:
- - Choose I2C to USB adapter board. Currently supported boards are FT260 and CP2112.
+ - Choose I2C to USB adapter board. Currently supported boards are FT260, CP2112, CH347T.
  - Connect INA board to I2C USB adapter board by 4 wires. The GND and VCC signals provide power, SDA and SCL are for I2C bus to read the data.
  - Provide I2C adapter name to the tool as command line option like *--param i2c=CP2112* or by adding *i2c=CP2112* to the comma-separated list of key=val pairs in the *device parameters* field of **dmm-start** application window. This is not necessary if you are using the default FT260 adapter.
  - Setup shunt resistance either by command line option like *--param shunt=.015* or by adding corresponding key=val pair to the *device parameters* field of **dmm-start** application window. This is not necessary if you have a default 0.1 Ohm shunt or does not want to measure current.
