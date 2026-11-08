@@ -6,7 +6,8 @@ https://github.com/i2cy/CH347-HIDAPI
 https://github.com/serfreeman1337/go-ch347
 """
 
-import time
+import os
+import sys
 import logging
 
 if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
@@ -16,6 +17,8 @@ log = logging.getLogger('DEV')
 DEVICE_VID = 0x1A86
 DEVICE_PID = 0x55DC
 DEVICE_IFN = 1
+
+MAX_PKT = 512
 
 I2CMode0 = 0 # Low rate 20KHz
 I2CMode1 = 1 # Standard rate 100KHz
@@ -94,7 +97,7 @@ def i2c_tx_raw(dev, data: list[int], read_len: int = 0) -> tuple[bool, list[int]
         payload = [0, 3 + len(data) + len(tail), 0, CmdI2CStream, CmdI2CStart, CmdI2CWrite + len(data)] + data + tail
 
     dev.write(payload)
-    feedback = dev.read(512, timeout_ms=READ_TOUT_MS)
+    feedback = dev.read(MAX_PKT, timeout_ms=READ_TOUT_MS)
     if not feedback:
         log.error('timeout %s addr %#x', 'reading' if len(data) <= 1 else 'writing', addr >> 1)
         return False, []
@@ -150,7 +153,7 @@ def gpio_set_pin(dev, pin: int, out_dir: bool, level: bool = False) -> bool|None
         cfg += 8
     pkt[len(prefix)+pin] = cfg
     dev.write([0] + pkt)
-    feedback = dev.read(512, timeout_ms=READ_TOUT_MS)
+    feedback = dev.read(MAX_PKT, timeout_ms=READ_TOUT_MS)
     if not feedback:
         log.error('GPIO packet response timeout')
         return None
@@ -180,7 +183,7 @@ def gpio_get_pin(dev, pin: int) -> bool|None:
     prefix = [11, 0, CmdGPIOSetup, 8, 0]
     pkt = prefix + [0] * 8
     dev.write([0] + pkt)
-    feedback = dev.read(512, timeout_ms=READ_TOUT_MS)
+    feedback = dev.read(MAX_PKT, timeout_ms=READ_TOUT_MS)
     if not feedback:
         log.error('GPIO packet response timeout')
         return None
@@ -205,7 +208,7 @@ def gpio_set(dev, pin_mask : int, out_mask: int, out_bits: int) -> bool|None:
                 cfg += 8
             pkt[len(prefix)+pin] = cfg
     dev.write([0] + pkt)
-    feedback = dev.read(512, timeout_ms=READ_TOUT_MS)
+    feedback = dev.read(MAX_PKT, timeout_ms=READ_TOUT_MS)
     if not feedback:
         log.error('GPIO packet response timeout')
         return None
@@ -239,7 +242,7 @@ def gpio_get(dev) -> int:
     prefix = [11, 0, CmdGPIOSetup, 8, 0]
     pkt = prefix + [0] * 8
     dev.write([0] + pkt)
-    feedback = dev.read(512, timeout_ms=READ_TOUT_MS)
+    feedback = dev.read(MAX_PKT, timeout_ms=READ_TOUT_MS)
     if not feedback:
         log.error('GPIO packet response timeout')
         return None
@@ -255,6 +258,7 @@ LED_GPIO_PIN = 4
 
 if __name__ == '__main__':
     import hid
+    import time
 
     def test_scan(dev):
         """Scan bus for devices"""

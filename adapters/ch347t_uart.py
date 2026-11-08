@@ -12,6 +12,8 @@ import threading
 
 if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
 
+from ch347t import MAX_PKT
+
 log = logging.getLogger('DEV')
 
 def find_uart():
@@ -73,7 +75,7 @@ def uart_rx(dev, tout=0) -> list[int]:
     data = []
     IDLE_WAIT = .01
     while True:
-        if pkt := dev.read(512):
+        if pkt := dev.read(MAX_PKT):
             data_len = pkt[0] + (pkt[1] << 8)
             data += pkt[2:2+data_len]
         elif tout <= 0:
