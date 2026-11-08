@@ -196,18 +196,6 @@ class I2CDevice(I2CDeviceCore):
         super().init(nchannels)
         self.channels = nchannels
 
-    @classmethod
-    def attach_to_i2c_bus(cls, master: 'I2CDevice') -> 'I2CDevice':
-        """
-        Create device attaching it to already initialized I2C bus.
-        The master device init() should be already called at this point.
-        """
-        assert isinstance(master, I2CDevice)
-        assert master.adapter is not None
-        dev = cls(master.dev, master.path)
-        dev.adapter = master.adapter
-        return dev
-
     def get_channel(self, data: Any) -> int | None:
         """
         Returns the index of the channel the data belongs to. If there are multiple
@@ -216,3 +204,16 @@ class I2CDevice(I2CDeviceCore):
         if not data:
             return None
         return -1 if self.channels > 1 else 0
+
+    @classmethod
+    def attach_to_i2c_bus(cls, master: 'I2CDevice') -> 'I2CDevice':
+        """
+        Create device attaching it to already initialized I2C bus.
+        Should be called before init method. The master device init()
+        should be already called at this point.
+        """
+        assert isinstance(master, I2CDevice)
+        assert master.adapter is not None
+        dev = cls(master.dev, master.path)
+        dev.adapter = master.adapter
+        return dev
