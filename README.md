@@ -5,6 +5,7 @@ This repository provides simple alternative to vendor data collection programs. 
  - simple GUI frontend application (**dmm-start**) with the same capabilities as CLI tool
  - support for USB and Bluetooth communication channels
  - support for several popular ADC boards with I2C interface connected via USB adapter
+ - collecting data from any number of devices simultaneously
  - ease of adding new multimeter models
  - ease of reuse in other projects
 
@@ -45,14 +46,13 @@ FNIRSI produces a line of USB testers capable of measuring USB bus voltage, load
 ### I2C devices connected via USB adapter
 The tool supports several popular current/voltage monitor and analog to digital converters (ADC) with I2C interface. The I2C or Inter Integrated Circuit bus is convenient since it uses minimal connections (2 wires + power) and has a wide range of available devices and adapters sold as ready to use modules by many manufacturers. The tool supports three I2C-to-USB adapters that can be used to connect I2C devices to your computer. They are selected since they are readily available and don't require any driver installations.
 
-##### Silicon Labs CP2112 adapter
-This is the inexpensive board supporting I2C and generic IO.
+| I2C-to-USB adapter  | Features                          |
+|---------------------|-----------------------------------|
+| Silicon Labs CP2112 | I2C, generic IO                   |
+| FTDI FT260          | I2C, generic IO, serial port      |
+| CH347T adapter      | I2C, generic IO, serial port, SPI |
 
-##### FTDI FT260 adapter
-This board supports I2C, generic IO and serial port. It also slightly faster than CP2112.
-
-##### CH347T adapter
-This is the fastest and most versatile USB adapter board. It supports I2C, generic IO, serial port and SPI. The SPI or Serial Peripheral Interface is another type of bus used by ADC devices. In contrast to I2C it uses at least 2 times more wires and less convenient to use. So the tool does not support it. However, an API for using SPI via the CH347T adapter is present in the repository. It can be used in your own Python code.
+The CH347T adapter is the fastest and most versatile USB adapter board. This is the only adapter supporting SPI without any vendor driver installation. The SPI or Serial Peripheral Interface is another type of bus used by ADC devices. In contrast to I2C it uses at least 2 times more wires and less convenient to use. Therefore the tool does not support it. However, an API for using SPI via the CH347T adapter is present in the repository. It can be used in your own Python code.
 
 #### INA226/228 current & voltage monitor boards
 The INA226 and INA228 are high precision digital current and voltage monitor integrated circuits manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect the monitor board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The INA226 is able to deliver 64k counts while INA228 have 1M counts. Both can be read at the rate of around 10 samples per second. The INA228 module provides current measuring resolution outperforming by an order of magnitude the capabilities of any other multimeter at the fraction of their price. Besides at has precision on-chip temperature sensor. By connecting K-type termocouple instead of the current shunt one can utilize INA228 for temperature measuring in the range from -200°C to 1372°C with high resolution. See [Working with INA226/228 current & voltage monitors](#working-with-ina226228-current--voltage-monitors) for more details.
