@@ -77,7 +77,7 @@ class ADS1220Adapter(SPIDevice):
     IMUX   = [IMUX_Off, IMUX_Off]
 
     # The gain, mux and TS mode flag for two possible readout channels
-    GAIN = [1, 1]
+    GAIN = [0, 0] # zero gain is the same as 1 but enforcing PGA bypass
     MUX  = [MUX_0_1, MUX_3_G]
     TS   = [False, False]
 
@@ -87,7 +87,7 @@ class ADS1220Adapter(SPIDevice):
     def set_gain(self, gain: int, chan: int = 0) -> bool:
         """Set PGA gain for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
-        if gain in (1, 2, 4, 8, 16, 32, 64, 128):
+        if gain in (0, 1, 2, 4, 8, 16, 32, 64, 128):
             self.GAIN[chan] = gain
             return True
         return False
