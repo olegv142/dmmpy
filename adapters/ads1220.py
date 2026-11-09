@@ -355,7 +355,7 @@ class ADS1220Device(SPIDevice):
         """Returns measurement mode and units description string"""
         if not data:
             return ''
-        return 'V'
+        return 'V' if self.MUX[channel] != self.MUX_TS else '°C'
 
 if __name__ == '__main__':
     import time
