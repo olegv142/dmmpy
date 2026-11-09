@@ -162,7 +162,7 @@ def gpio_set_pin(dev, pin: int, out_dir: bool, level: bool = False) -> bool|None
         return None
     cfg_ret = feedback[len(prefix)+pin]
     if out_dir != ((cfg_ret & 0x80) != 0):
-        log.debug('failed to set GPIO#%d as %s, got %s', pin,
+        log.error('failed to set GPIO#%d as %s, got %s', pin,
             'output' if out_dir else 'input', bin(cfg_ret))
         return None
     if out_dir:
@@ -222,7 +222,7 @@ def gpio_set(dev, pin_mask : int, out_mask: int, out_bits: int) -> bool|None:
             cfg_ret = feedback[len(prefix)+pin]
             out_dir = ((out_mask & bit) != 0)
             if out_dir != ((cfg_ret & 0x80) != 0):
-                log.debug('failed to set GPIO#%d as %s, got %s', pin,
+                log.error('failed to set GPIO#%d as %s, got %s', pin,
                     'output' if out_dir else 'input', bin(cfg_ret))
                 return None
             if out_dir:
