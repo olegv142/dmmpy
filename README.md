@@ -4,7 +4,7 @@ This repository provides simple alternative to vendor data collection programs. 
  - single CLI tool (**dmm-get**) for data collection and visualization
  - simple GUI frontend application (**dmm-start**) with the same capabilities as CLI tool
  - support for USB and Bluetooth communication channels
- - support for several popular ADC boards with I2C interface connected via USB adapter
+ - support for several popular ADC boards with I2C and SPI interface connected via USB adapter
  - collecting data from any number of devices simultaneously
  - ease of adding new multimeter models
  - ease of reuse in other projects
@@ -52,7 +52,7 @@ The tool supports several popular current/voltage monitor and analog to digital 
 | FTDI FT260          | I2C, generic IO, serial port      |
 | CH347T adapter      | I2C, generic IO, serial port, SPI |
 
-The CH347T adapter is the fastest and most versatile USB adapter board. This is the only adapter supporting SPI without any vendor driver installation. The SPI or Serial Peripheral Interface is another type of bus used by ADC devices. In contrast to I2C it uses at least 2 times more wires and less convenient to use. Therefore the tool does not support it. However, an API for using SPI via the CH347T adapter is present in the repository. It can be used in your own Python code.
+The CH347T adapter is the fastest and most versatile USB adapter board. This is the only adapter supporting SPI without any vendor driver installation. The SPI or Serial Peripheral Interface is another type of bus used by ADC devices. In contrast to I2C it uses at least 2 times more wires and less convenient to use.
 
 #### INA226/228 current & voltage monitor boards
 The INA226 and INA228 are high precision digital current and voltage monitor integrated circuits manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect the monitor board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The INA226 is able to deliver 64k counts while INA228 have 1M counts. Both can be read at the rate of around 10 samples per second. The INA228 module provides current measuring resolution outperforming by an order of magnitude the capabilities of any other multimeter at the fraction of their price. Besides at has precision on-chip temperature sensor. By connecting K-type termocouple instead of the current shunt one can utilize INA228 for temperature measuring in the range from -200°C to 1372°C with high resolution. See [Working with INA226/228 current & voltage monitors](#working-with-ina226228-current--voltage-monitors) for more details.
@@ -62,6 +62,24 @@ This is inexpensive Analog to Digital Converter chip manufactured by Microchip. 
 
 #### ADS1115 16-bit ADC
 This is inexpensive Analog to Digital Converter chip manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The tool is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect ADS1115 board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The ADS1115 is able to measure voltages with resolution down to ~8µV. It has convenient multiplexer fabric able to choose from its four inputs. It may be handy while sampling sequentially several voltage sources by switching them from your python script.
+
+### SPI devices connected via USB adapter
+The CH347T is the only USB to SPI adapter supported by **dmmpy**. Typically you will need the following connections between you SPI ADC device and the adapter board.
+
+| Signal | Purpose                                                            |
+|--------|--------------------------------------------------------------------|
+| VDD    | Power voltage                                                      |
+| GND    | Ground voltage                                                     |
+| MOSI   | Master Output Slave Input, here the adapter transmits commands     |
+| MISO   | Master Input Slave Output, here the ADC device responds to adapter |
+| SCLK   | Serial Clock, used to synchronize data transmission                |
+| CS     | Chip Select, notifies device about data transmission               |
+| DRDY   | Data Ready, notifies adapter that the new data is ready to be read |
+
+So there are much more signals than just SDA/SCL + power used by I2C devices. Typically SPI ADC are also more complicated in setting up correctly. Reading device datasheet first is always strongly recommended when dealing with SPI ADC devices.
+
+#### ADS1220 24-bit ADC
+This is the versatile and quite sensitive ADC with 4 analog inputs similar to ADS1115 but with more resolution and features. Its relatively simple to use provided that you can wire it to the CH347T adapter. This device is also sold by Chinese sellers at a surprisingly low price.Of course, it needs to be thoroughly tested. The **dmmpy** program provides a very convenient test platform where you can check almost all of the chip's functions.
 
 ## Installation
 The installation basically involves three steps - getting the source, installing python and installing required packages. Windows users have convenient alternative of using [portable binaries](#using-portable-binaries).
@@ -267,22 +285,33 @@ Working with Bluetooth adapter conceptually is not different from using USB. Jus
 ## Setting device-specific parameters
 Some devices need special settings not applicable to other device. There is a special command line option to setup such parameters *--param*. It should be followed by KEY=VAL pair. To set multiple parameters this option may be used multiple times like *--param KEY1=VAL1 --param KEY2=VAL2 ..*. To setup parameters in **dmm-start** [data acquisition launcher GUI](#data-acquisition-launcher) one should use *device parameters* field separating *key=value* pairs by comma. The following table lists all possible parameters and notes where they are applicable. Note that the parameter names are case-insensitive.
 
-| Parameter name | Meaning                                                          | Default         | Applicable to    |
-|----------------|------------------------------------------------------------------|-----------------|------------------|
-| tout           | Data read timeout in seconds                                     | device specific | any device       |
-| vid, pid       | The USB VID, PID numbers in case you need to change default ones | device specific | USB device       |
-| btname         | Bluetooth device name in case you need to change default one     | device specific | BT device        |
-| baud           | The USB CDC device serial baud rate                              | 115200          | USB CDC device   |
-| i2c            | I2C to USB adapter for INA device {FT260,CP2112,CH347T}          | FT260           | I2C device       |
-| addr           | I2C address                                                      | device specific | I2C device       |
-| shunt          | Shunt resistance for INA current & voltage monitors              | 0.1 Ohm         | INA226/228       |
-| range          | INA228 shunt voltage range {0,1}                                 | 0               | INA228           |
-| tempco         | INA228 shunt temperature coefficient                             | 0               | INA228           |
-| amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}               | cv              | INA228           |
-| gain           | ADC amplifier gain                                               | device specific | MCP3421, ADS1115 |
-| mux            | ADC input multiplexer configuration                              | 0               | ADS1115          |
-| again          | Alternative channel ADC amplifier gain                           | 0               | ADS1115          |
-| amux           | Alternative channel ADC input multiplexer configuration          | 7               | ADS1115          |
+| Parameter name | Meaning                                                            | Default         | Applicable to    |
+|----------------|--------------------------------------------------------------------|-----------------|------------------|
+| tout           | Data read timeout in seconds                                       | device specific | any device       |
+| vid, pid       | The USB VID, PID numbers in case you need to change default ones   | device specific | USB device       |
+| btname         | Bluetooth device name in case you need to change default one       | device specific | BT device        |
+| baud           | The USB CDC device serial baud rate                                | 115200          | USB CDC device   |
+| i2c            | I2C to USB adapter for INA device {FT260,CP2112,CH347T}            | FT260           | I2C device       |
+| addr           | I2C address                                                        | device specific | I2C device       |
+| shunt          | Shunt resistance for INA current & voltage monitors                | 0.1 Ohm         | INA226/228       |
+| range          | INA228 shunt voltage range {0,1}                                   | 0               | INA228           |
+| tempco         | INA228 shunt temperature coefficient                               | 0               | INA228           |
+| amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}                 | cv              | INA228           |
+| gain           | ADC amplifier gain                                                 | 0               | MCP3421, ADS1115, ADS1220 |
+| again          | Alternative channel ADC amplifier gain                             | 0               | ADS1115, ADS1220          |
+| mux            | ADC input multiplexer configuration                                | device specific | ADS1115, ADS1220          |
+| amux           | Alternative channel ADC input multiplexer configuration            | device specific | ADS1115, ADS1220          |
+| ts             | Activates temperature sensor reading if set to non zero value      | 0               | ADS1220          |
+| ats            | Activates temperature sensor reading in alternative channel        | 0               | ADS1220          |
+| bypass         | Enables bypass of the ADC internal amplifier if possible           | 1               | ADS1220          |
+| vref           | Selects the source of ADC reference voltage                        | 0 (internal)    | ADS1220          |
+| fir            | Selects ADC filtering mode                                         | 2 (50Hz reject) | ADS1220          |
+| idac           | Selects the ADC excitation current source mode                     | 0 (off)         | ADS1220          |
+| i1mux          | Selects the first excitation current source connection             | 0 (off)         | ADS1220          |
+| i2mux          | Selects the second excitation current source connection            | 0 (off)         | ADS1220          |
+| cs             | SPI Chip Select pin used, disables using CS signal if set to -1    | 0               | ADS1220          |
+| rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6               | ADS1220          |
+| ds             | Enables double sampling (offset compensation) and sets sample count| 0               | ADS1220          |
 
 ## Working with other supported devices
 ### Specifying device model
@@ -307,6 +336,7 @@ By default, the **dmm-get** tool expects the UT61X+ multimeter as the target dev
 | TI      | INA226 with I2C to USB adapter               | -M INA226             | INA226 USB                         |
 |         | INA228 with I2C to USB adapter               | -M INA228             | INA228 USB                         |
 |         | ADS1115 with I2C to USB adapter              | -M ADS1115            | ADS1115 USB                        |
+|         | ADS1220 with SPI to USB adapter              | -M ADS1220            | ADS1220 USB                        |
 | Microchip | MCP3421 with I2C to USB adapter            | -M MCP3421            | MCP3421 USB                        |
 
 ### Working with INA226/228 current & voltage monitors
