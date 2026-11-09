@@ -1,5 +1,6 @@
 """
 ADS1220 24-bit ADC adapter
+See https://www.ti.com/lit/ds/symlink/ads1220.pdf
 """
 
 import os
