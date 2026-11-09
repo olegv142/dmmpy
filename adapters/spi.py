@@ -10,7 +10,6 @@ from typing import Any
 if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
 
 from device import Device, HIDMixin
-import i2c
 import ch347t
 import ch347t_spi
 
@@ -143,9 +142,7 @@ class SPIDevice(Device, HIDMixin):
         Should be called before init method. The master device init()
         should be already called at this point.
         """
-        assert isinstance(master, I2CDevice)
         assert master.adapter is not None
-        assert isinstance(master.adapter, CH347TAdapter)
-        assert cls.SPI_ADAPTER_TYPE is CH347TSPIAdapter
+        assert cls.SPI_ADAPTER_TYPE.NAME == master.adapter.NAME
         dev = cls(master.dev, master.path)
         return dev
