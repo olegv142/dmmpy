@@ -301,8 +301,6 @@ Some devices need special settings not applicable to other device. There is a sp
 | again          | Alternative channel ADC amplifier gain                             | 0               | ADS1115, ADS1220          |
 | mux            | ADC input multiplexer configuration                                | device specific | ADS1115, ADS1220          |
 | amux           | Alternative channel ADC input multiplexer configuration            | device specific | ADS1115, ADS1220          |
-| ts             | Activates temperature sensor reading if set to non zero value      | 0               | ADS1220          |
-| ats            | Activates temperature sensor reading in alternative channel        | 0               | ADS1220          |
 | bypass         | Enables bypass of the ADC internal amplifier if possible           | 1               | ADS1220          |
 | vref           | Selects the source of ADC reference voltage                        | 0 (internal)    | ADS1220          |
 | fir            | Selects ADC filtering mode                                         | 2 (50Hz reject) | ADS1220          |
@@ -408,6 +406,32 @@ In case you are going to read alternative data channel you may configure its mul
 
 ### Working with ADS1220 ADC boards
 To be able to receive data from ADS1220 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter. Typical ADS1220 board has two power inputs (digital and analog) so that you have to connect both of them. The CS signal should be connected to CS0 pin of the adapter. The DRDY signal should be connected to IO6 pin of the adapter. Both pins can be changed by setting *cs* and *rdy* parameters if necessary. The *gain* and *again* parameters specify the ADC internal amplifier gain. They should be choosen from {0, 1, 2, 4, 8, 16, 32, 64, 128}. The gain 0 is the default. It has the same effect as gain 1 with additional forcing internal amplifier bypass to reduce noise and improve input signal range. Note that using gains 8 and above will engage internal amplifier. This will increase noise slightly and reduce possible input voltage range. At high gain settings the input voltage at both positive and negative inputs should be close to the half of the power voltage.
+
+The *mux* and *amux* parameters determine ADC input multiplexer configuration for the main and alternative readout channels. Their possible values are listed in the following table
+
+| mux parameter | positive terminal | negative terminal |
+|---------------|-------------------|-------------------|
+| 0             | AIN0              | AIN1              |
+| 1             | AIN0              | AIN2              |
+| 2             | AIN0              | AIN3              |
+| 3             | AIN1              | AIN2              |
+| 4             | AIN1              | AIN3              |
+| 5             | AIN2              | AIN3              |
+| 6             | AIN1              | AIN0              |
+| 7             | AIN3              | AIN2              |
+| 8             | AIN0              | AGND              |
+| 9             | AIN1              | AGND              |
+| 10            | AIN2              | AGND              |
+| 11            | AIN3              | AGND              |
+
+The next parameters engage internal connections for monitoring purposes. The last value (15) is used as a flag to toggle temperature sensor mode.
+
+| mux parameter | ADC input                                  | notes                             |
+|---------------|--------------------------------------------|-----------------------------------|
+| 12            | (VREFPx – VREFNx) / 4                      | PGA bypassed                      |
+| 13            | (AVDD – AGND) / 4                          | PGA bypassed                      |
+| 14            | AINP and AINN shorted to (AVDD + AVSS) / 2 | used for offset compensation      |
+| 15            | activates temperature sensor reading       | set TS bit in configuration reg#1 |
 
 There are quite a lot of configuration parameters that can be used with ADS1220. They are listed in the [Setting device-specific parameters](#setting-device-specific-parameters) section. For there meaning please consult the device [datasheet](https://www.ti.com/lit/ds/symlink/ads1220.pdf).
 
