@@ -81,15 +81,11 @@ class INA226Device(INADevice):
         if not self.is_connected():
             return None
         try:
-            if not self.adapter.i2c_write(self.I2C_ADDR, [1]): # set target register address
-                return None
-            if (idata := self.adapter.i2c_read(self.I2C_ADDR, 2)) is None:
+            if (idata := self.adapter.i2c_write_read(self.I2C_ADDR, [1], 2)) is None:
                 return None
             if self.channels < 2:
                 return (bytes(idata),)
-            if not self.adapter.i2c_write(self.I2C_ADDR, [2]): # set target register address
-                return None
-            if (vdata := self.adapter.i2c_read(self.I2C_ADDR, 2)) is None:
+            if (vdata := self.adapter.i2c_write_read(self.I2C_ADDR, [2], 2)) is None:
                 return None
             return (bytes(idata), bytes(vdata))
         except Exception as e:
@@ -197,23 +193,17 @@ class INA228Device(INADevice):
             return None
         read_channels = self.channels if self.CHAN_REMAP is None and not self.TEMPCO else self.NCHANNELS
         try:
-            if not self.adapter.i2c_write(self.I2C_ADDR, [4]): # set VSHUNT target register address
-                return None
-            if (idata := self.adapter.i2c_read(self.I2C_ADDR, 3)) is None:
+            if (idata := self.adapter.i2c_write_read(self.I2C_ADDR, [4], 3)) is None:
                 return None
             idata += b'\0' # extend it to 32 bits to simplify conversion
             if read_channels < 2:
                 return (bytes(idata),)
-            if not self.adapter.i2c_write(self.I2C_ADDR, [5]): # set VBUS target register address
-                return None
-            if (vdata := self.adapter.i2c_read(self.I2C_ADDR, 3)) is None:
+            if (vdata := self.adapter.i2c_write_read(self.I2C_ADDR, [5], 3)) is None:
                 return None
             vdata += b'\0' # extend it to 32 bits to simplify conversion
             if read_channels < 3:
                 return (bytes(idata), bytes(vdata))
-            if not self.adapter.i2c_write(self.I2C_ADDR, [6]): # set DIETEMP target register address
-                return None
-            if (tdata := self.adapter.i2c_read(self.I2C_ADDR, 2)) is None:
+            if (tdata := self.adapter.i2c_write_read(self.I2C_ADDR, [6], 2)) is None:
                 return None
             return (bytes(idata), bytes(vdata), bytes(tdata))
         except Exception as e:
