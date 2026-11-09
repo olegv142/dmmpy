@@ -297,11 +297,16 @@ class ADS1220Adapter(SPIDevice):
         super().init(nchannels)
         try:
             if not self.adapter.gpio_set_pin(self.RDY_IN, out_dir=False):
+                log.error('SPI adapter initialization failed')
+                self.disconnected = True
+                return
+            self._cs(True)
+            res = self._reset()
+            self._cs(False)
+            if not res:
                 log.error('ADS1220 initialization failed')
                 self.disconnected = True
-            self._cs(True)
-            self._reset()
-            self._cs(False)
+                return                
             if self.SPI_CS < 0:
                 time.sleep(.1) # no ideas why
         except Exception as e:
