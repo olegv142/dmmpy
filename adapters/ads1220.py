@@ -81,6 +81,9 @@ class ADS1220Adapter(SPIDevice):
     MUX  = [MUX_0_1, MUX_3_G]
     TS   = [False, False]
 
+    # Double sampling
+    DS = 0 # disabled
+
     def set_gain(self, gain: int, chan: int = 0) -> bool:
         """Set PGA gain for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
@@ -149,6 +152,10 @@ class ADS1220Adapter(SPIDevice):
             return True
         return False
 
+    def set_double_sampling(self, cnt: int):
+        """Setup double sampling"""
+        self.DS = cnt
+
     def set_param(self, key: str, val: str|float) -> bool:
         """
         Set device specific parameter.
@@ -187,6 +194,9 @@ class ADS1220Adapter(SPIDevice):
                 return self.set_imux(0, int(val))
             if lkey == 'i2mux':
                 return self.set_imux(1, int(val))
+            if lkey == 'ds':
+                self.set_double_sampling(int(val))
+                return True
         except Exception as e:
             log.debug(e, exc_info=True)
             return False
@@ -236,7 +246,8 @@ class ADS1220Adapter(SPIDevice):
         if not self.is_connected():
             return None
         G = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7}.get(gain, 0)
-        PGA_BYPASS = 1 if self.BYPASS and gain < 8 else 0
+        # zero gain forces PGA bypass
+        PGA_BYPASS = 1 if gain == 0 or (self.BYPASS and gain < 8) else 0
         cfg = [
                 (mux << 4) + (G << 1) + PGA_BYPASS, (ts << 1),
                 (self.VREF << 6) + (self.FIR << 4) + self.IDAC,
@@ -275,18 +286,35 @@ class ADS1220Adapter(SPIDevice):
             log.debug(e, exc_info=True)
             return None
 
-    def exec_conversion(self, mux: int, gain: int, ts: bool = False, idle_sleep=time.sleep) -> float|None:
+    def exec_conversion_once(self, mux: int, gain: int, ts: bool = False, idle_sleep=time.sleep) -> float|None:
         """Executes single conversion given MUX, gain value and TS mode flag. Returns floating point value or None on error."""
         data = self.exec_conversion_raw(mux, gain, ts, idle_sleep)
         if not data:
             return None
         if not ts:
             val = struct.unpack('>i', bytes(data + [0]))[0]
-            FSR = 2.048 / gain
+            real_gain = 1 if (mux == self.MUX_VREF_4 or mux == self.MUX_AVDD_4) else max(gain, 1)
+            FSR = 2.048 / real_gain
             return val * FSR / (1 << 31)
         else:
             val = struct.unpack('>h', bytes(data[:2]))[0]
             return val * 0.03125 / 4
+
+    def exec_conversion(self, mux: int, gain: int, ts: bool = False, idle_sleep=time.sleep) -> float|None:
+        """Execute conversion with optional double sampling. Returns floating point value or None on error."""
+        if self.DS <= 0 or ts:
+            return self.exec_conversion_once(mux, gain, ts, idle_sleep)
+        total = 0.
+        for _ in range(self.DS):
+            val = self.exec_conversion_once(mux, gain, False, idle_sleep)
+            off = self.exec_conversion_once(self.MUX_SHORT,
+                    0 if (mux == self.MUX_VREF_4 or mux == self.MUX_AVDD_4) else gain,
+                    False, idle_sleep
+                )
+            if val is None or off is None:
+                return None
+            total += val - off
+        return total / self.DS
 
     def init(self, nchannels: int = 1):
         """
