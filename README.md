@@ -748,8 +748,7 @@ if dev := INA228Device.set_i2c_adapter(CP2112Adapter).open():
 ```
 
 ### Reading data from several I2C devices on the same bus
-The I2CDevice base class adds an important method to its descendants - attach_to_i2c_bus. It creates device instance by attaching it to existing I2C bus given the initialized instance of another 'master' device already sitting on the bus. No USB device discovery is necessary for the new device creation. It just uses already initialized USB device of the master. This method is useful in case you are going to read data from multiple devices sharing the same I2C bus and USB adapter. The following code example illustrates reading the data from 
-ADS1115 and MCP3421 devices sharing the same bus.
+The I2CDevice base class adds an important method to its descendants - attach_to_i2c_bus. It creates device instance by attaching it to existing I2C bus given the initialized instance of another 'master' device already sitting on the bus. No USB device discovery is necessary for the new device creation. It just uses already initialized USB device of the master. This method is useful in case you are going to read data from multiple devices sharing the same I2C bus and USB adapter. The following code example illustrates reading the data from ADS1115 and MCP3421 devices sharing the same bus.
 ```python
 from dmmpy.adapters.ads1115 import ADS1115Device
 from dmmpy.adapters.mcp3421 import MCP3421Device
@@ -757,20 +756,37 @@ from dmmpy.adapters.i2c import FT260Adapter
 
 if dev1 := ADS1115Device.set_i2c_adapter(FT260Adapter).open():
     with dev1:
-        dev1.init(2)
+        dev1.init()
         dev2 = MCP3421Device.attach_to_i2c_bus(dev1)
         dev2.init()
         while dev1.is_connected() and dev2.is_connected():
             if (data1 := dev1.query_raw()) and (data2 := dev2.query_raw()):
                 print(
-                    dev1.get_value(data1, 0), dev1.get_mode(data1, 0),
-                    dev1.get_value(data1, 1), dev1.get_mode(data1, 1),
+                    dev1.get_value(data1), dev1.get_mode(data1),
                     dev2.get_value(data2), dev2.get_mode(data2)
                 )
             else:
                 break
 ```
 Note that devices sharing the same bus should have different bus addresses to avoid conflicts. The MCP3421 has bus address programmed on the factory so its hard to have more than one such device on the bus. The ADS1115 may be configured to use 4 different addresses so you can attach 4 such devices to the same bus. Look at the particular device datashit for more details.
+
+### Sampling ADS1115 inputs sequentially
+While working with ADS1115 adapter class one can sample specific input multiplexer and gain configuration with exec_conversion method as illustrated by the following code.
+```python
+from dmmpy.adapters.ads1115 import ADS1115Device
+from dmmpy.adapters.i2c import CP2112Adapter
+
+if dev := ADS1115Device.set_i2c_adapter(CP2112Adapter).open():
+    with dev:
+        dev.init()
+        while dev.is_connected():
+                print(
+                    dev.exec_conversion(mux=dev.MUX_0_G, gain=16),
+                    dev.exec_conversion(mux=dev.MUX_1_G, gain=16),
+                    dev.exec_conversion(mux=dev.MUX_2_G, gain=16),
+                    dev.exec_conversion(mux=dev.MUX_3_G, gain=16)
+                )
+```
 
 ### Measuring multiple voltages by ADS1115 with external multiplexer
 By attaching external multiplexer to ADS1115 you can create device able to measure multiple voltages sequentially. The example of such device is shown below. It is capable of monitoring voltage in 16 input channels.
