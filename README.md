@@ -509,6 +509,9 @@ echo 'SUBSYSTEM=="usb", GROUP="hidaccess", MODE="0664"' | sudo tee /etc/udev/rul
 ```
 You have to re-login or reboot to apply new group membership properly.
 
+### CH347T USB adapter not found by **dmmpy**
+The CH347T adapter has several operating modes. Only mode 2 is supported by **dmmpy**. Typically there is a small double dip-switch on the adapter board that can be used to select required mode. If there is no such switch (or there is a switch with 4 sections) then you probably have different chip CH347F which is not supported by **dmmpy**. Chinese sellers may even do not distinguish them and send randomly.
+
 # Appendixes
 
 ## Adding your own device
