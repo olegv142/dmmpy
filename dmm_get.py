@@ -18,6 +18,7 @@ from adapters.fnirsi import FNB48pUsb, FNB48pBt, FNB58Usb, FNB58Bt, FNAC28, FNBC
 from adapters.ina import INA226Device, INA228Device
 from adapters.mcp3421 import MCP3421Device
 from adapters.ads1115 import ADS1115Device
+from adapters.ads1220 import ADS1220Adapter
 from adapters.i2c import I2CBusScanner
 from data_stat import StatCollector, histogram
 from version import version_str
@@ -37,7 +38,8 @@ _supported_devices = (
     INA226Device,
     INA228Device,
     MCP3421Device,
-    ADS1115Device
+    ADS1115Device,
+    ADS1220Adapter
 )
 
 class Plotter:
