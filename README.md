@@ -703,7 +703,8 @@ While working with INA current & voltage monitors from your scripts its necessar
 
 The following code example illustrates reading current and voltage from INA226 module with 15mOhm shunt via CP2112 adapter.
 ```python
-from dmmpy.adapters.ina import INA226Device, CP2112Adapter
+from dmmpy.adapters.ina import INA226Device
+from dmmpy.adapters.i2c import CP2112Adapter
 
 if dev := INA226Device.set_i2c_adapter(CP2112Adapter).open():
     with dev:
@@ -722,7 +723,8 @@ if dev := INA226Device.set_i2c_adapter(CP2112Adapter).open():
 #### Reading temperature with external K-termocouple connected to INA228
 The INA228 provides addition temperature measuring capabilities. One can even connect K-type termocouple to it instead of the shunt. The following code example illustrates reading voltage, chip temperature and termocouple temperature with such setup. It also illustrates using I2C adapter GPIO by blinking green LED on the CP2112 adapter board.
 ```python
-from dmmpy.adapters.ina import INA228Device, CP2112Adapter
+from dmmpy.adapters.ina import INA228Device
+from dmmpy.adapters.i2c import CP2112Adapter
 import cp2112
 
 led_pin = cp2112.GPIO_LED_GREEN
