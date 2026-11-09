@@ -850,6 +850,28 @@ if dev := ADS1115Device.open():
 ```
 See [ads1115_mux.py](adapters/ads1115_mux.py) for more implementation details. Note that ADS1115 has finite input impedance of ~10 MOhm. Therefore to keep measuring accuracy within 0.1% the R0 value should not exceed 10kOhm.
 
+### Working with I2C and SPI devices simultaneously via the CH347T adapter
+The following code illustrates reading ADS1115 and ADS1220 devices connected to the same CH347T adapter via two different buses - I2C and SPI. The ADS1115 device is opened first. Then the attach_to_i2c_adapter method creates instance of ADS1220Device connected to the same adapter.
+
+```python
+from dmmpy.adapters.ads1115 import ADS1115Device
+from dmmpy.adapters.ads1220 import ADS1220Device
+from dmmpy.adapters.i2c import CH347TAdapter
+
+if dev1 := ADS1115Device.set_i2c_adapter(CH347TAdapter).open():
+    with dev1:
+        dev1.init()
+        dev2 = ADS1220Device.attach_to_i2c_adapter(dev1)
+        dev2.init()
+        with dev2:
+            while dev1.is_connected() and dev2.is_connected():
+                print(
+                    dev1.exec_conversion(mux=dev1.MUX_0_G, gain=16),
+                    dev2.exec_conversion(mux=dev2.MUX_AVDD_4), # AVDD/4
+                    dev2.exec_conversion(mux=dev2.MUX_TS),     # chip temperature
+                )
+```
+
 ### Using UART port of the FT260 adapter
 The big advantage of FT260 USB adapter is the possibility to use its UART port in parallel with I2C bus operation. The UART has its own HID device instance so its completely dependent. The only peculiarity that should be kept in mind is the low receiver queue capacity. Therefore the port should be read frequently to avoid data loss. The ft260_uart.py module implements the dedicated receiver class queering data received by UART in separate thread. The following code fragment illustrates using FT260 module UART port to transmit message and receive it back having RX-TX pins interconnected.
 ```python
