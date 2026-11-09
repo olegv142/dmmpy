@@ -16,7 +16,7 @@ from spi import SPIDevice
 
 log = logging.getLogger('DEV')
 
-class ADS1220Adapter(SPIDevice):
+class ADS1220Device(SPIDevice):
     """ADS1220 ADC adapter"""
     MODEL_NAME = 'ADS1220'
     NCHANNELS  = 2
@@ -67,7 +67,7 @@ class ADS1220Adapter(SPIDevice):
     MUX_VREF_4 = 12 # (VREFPx – VREFNx) / 4 monitor (PGA bypassed)
     MUX_AVDD_4 = 13 # (AVDD – AVSS) / 4 monitor (PGA bypassed)
     MUX_SHORT  = 14 # AINP and AINN shorted to (AVDD + AVSS) / 2
-
+    MUX_TS = MUX_RESERVED = 15 # Activates TS mode
     # ADC configuration
     SPI_CS = 0 # CS line index
     RDY_IN = 6 # DRDY GPIO pin
@@ -77,10 +77,9 @@ class ADS1220Adapter(SPIDevice):
     IDAC   = IDAC_Off # IDAC disabled
     IMUX   = [IMUX_Off, IMUX_Off]
 
-    # The gain, mux and TS mode flag for two possible readout channels
+    # The gain and mux for two possible readout channels
     GAIN = [0, 0] # zero gain is the same as 1 but enforcing PGA bypass
     MUX  = [MUX_0_1, MUX_3_G]
-    TS   = [False, False]
 
     # Double sampling
     DS = 0 # disabled
@@ -96,15 +95,10 @@ class ADS1220Adapter(SPIDevice):
     def set_mux(self, mux: int, chan: int = 0) -> bool:
         """Set input MUX configuration for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
-        if 0 <= mux < 15:
+        if 0 <= mux < 16:
             self.MUX[chan] = mux
             return True
         return False
-
-    def set_ts_mode(self, ts: bool|int, chan: int = 0):
-        """Set temperature sensor mode for the given readout channel"""
-        assert 0 <= chan < self.NCHANNELS
-        self.TS[chan] = bool(ts)
 
     def set_cs_pin(self, cs_idx: int) -> bool:
         """Set index of CS adapter output. The -1 disables using CS signal."""
@@ -172,9 +166,6 @@ class ADS1220Adapter(SPIDevice):
                 return self.set_mux(int(val), 0)
             if lkey == 'amux':
                 return self.set_mux(int(val), 1)
-            if lkey == 'ts':
-                self.set_ts_mode(int(val), 0)
-                return True
             if lkey == 'ats':
                 self.set_ts_mode(int(val), 1)
                 return True
@@ -242,15 +233,16 @@ class ADS1220Adapter(SPIDevice):
         if self.SPI_CS >= 0:
             self.adapter.spi_set_cs(self.SPI_CS, active)
 
-    def exec_conversion_raw(self, mux: int, gain: int, ts: bool = False, idle_sleep=time.sleep) -> bytes|None:
-        """Executes single conversion given MUX, gain value and TS mode flag. Returns raw bytes result or None on error."""
+    def exec_conversion_raw(self, mux: int, gain: int, idle_sleep=time.sleep) -> bytes|None:
+        """Executes single conversion given MUX and gain value. Returns raw bytes result or None on error."""
         if not self.is_connected():
             return None
         G = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7}.get(gain, 0)
         # zero gain forces PGA bypass
         PGA_BYPASS = 1 if gain == 0 or (self.BYPASS and gain < 8) else 0
         cfg = [
-                (mux << 4) + (G << 1) + PGA_BYPASS, (ts << 1),
+                (mux << 4) + (G << 1) + PGA_BYPASS,
+                ((mux == self.MUX_TS) << 1),
                 (self.VREF << 6) + (self.FIR << 4) + self.IDAC,
                 (self.IMUX[0] << 5) + (self.IMUX[1] << 2)
             ]
@@ -287,12 +279,12 @@ class ADS1220Adapter(SPIDevice):
             log.debug(e, exc_info=True)
             return None
 
-    def exec_conversion_once(self, mux: int, gain: int, ts: bool = False, idle_sleep=time.sleep) -> float|None:
-        """Executes single conversion given MUX, gain value and TS mode flag. Returns floating point value or None on error."""
-        data = self.exec_conversion_raw(mux, gain, ts, idle_sleep)
+    def exec_conversion_once(self, mux: int, gain: int, idle_sleep=time.sleep) -> float|None:
+        """Executes single conversion given MUX and gain value. Returns floating point value or None on error."""
+        data = self.exec_conversion_raw(mux, gain, idle_sleep)
         if not data:
             return None
-        if not ts:
+        if mux != self.MUX_TS:
             val = struct.unpack('>i', bytes(data + [0]))[0]
             real_gain = 1 if (mux == self.MUX_VREF_4 or mux == self.MUX_AVDD_4) else max(gain, 1)
             FSR = 2.048 / real_gain
@@ -301,16 +293,16 @@ class ADS1220Adapter(SPIDevice):
             val = struct.unpack('>h', bytes(data[:2]))[0]
             return val * 0.03125 / 4
 
-    def exec_conversion(self, mux: int, gain: int, ts: bool = False, idle_sleep=time.sleep) -> float|None:
+    def exec_conversion(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
         """Execute conversion with optional double sampling. Returns floating point value or None on error."""
-        if self.DS <= 0 or ts:
-            return self.exec_conversion_once(mux, gain, ts, idle_sleep)
+        if self.DS <= 0 or mux == self.MUX_TS:
+            return self.exec_conversion_once(mux, gain, idle_sleep)
         total = 0.
         for _ in range(self.DS):
-            val = self.exec_conversion_once(mux, gain, False, idle_sleep)
+            val = self.exec_conversion_once(mux, gain, idle_sleep)
             off = self.exec_conversion_once(self.MUX_SHORT,
                     0 if (mux == self.MUX_VREF_4 or mux == self.MUX_AVDD_4) else gain,
-                    False, idle_sleep
+                    idle_sleep
                 )
             if val is None or off is None:
                 return None
@@ -346,7 +338,7 @@ class ADS1220Adapter(SPIDevice):
         """Query data from device"""
         data = []
         for c in range(self.channels):
-            val = self.exec_conversion(self.MUX[c], self.GAIN[c], self.TS[c], idle_sleep)
+            val = self.exec_conversion(self.MUX[c], self.GAIN[c], idle_sleep)
             if val is None:
                 return None
             data.append(val)
@@ -368,13 +360,13 @@ class ADS1220Adapter(SPIDevice):
 if __name__ == '__main__':
     import time
     logging.basicConfig(level=logging.DEBUG)
-    if dev := ADS1220Adapter.open():
+    if dev := ADS1220Device.open():
         print(dev)
         with dev:
             dev.init()
             while True:
                 print(
-                    dev.exec_conversion(dev.MUX_AVDD_4, 1),
+                    dev.exec_conversion(dev.MUX_AVDD_4),
                     dev.exec_conversion(dev.MUX_SHORT, 4),
-                    dev.exec_conversion(0, 0, ts=True)
+                    dev.exec_conversion(dev.MUX_TS)
                 )
