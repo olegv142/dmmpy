@@ -132,6 +132,8 @@ def i2c_probe(dev, address: int) -> bool:
 #
 # Note that GPIO pins are multiplexed dynamically. For example, one can set IO3/SCL pin to low.
 # It will go high on I2C transaction start and go back to low on transaction completion.
+# Yet some IO pins behaves weirdly if configured as input, IO1 pin in particular.
+# The IO7 pin is pulled low initially so it can't be connected to the output pulled high initially.
 #
 
 CmdGPIOSetup = 0xCC
