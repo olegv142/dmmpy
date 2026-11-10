@@ -933,6 +933,8 @@ else:
     print('CH347T UART not found')
 ```
 
+See [ch347t_uart.py](adapters/ch347t_uart.py) for more implementation details.
+
 ## Which multimeter is better and why
 If you don't need exceptional precision, then all multimeters with 6000 counts and more will give you reasonably good results in any mode except for the current measuring. Here we will consider why the current measuring mode is so demanding and why popular UNI-T multimeters are actually the least usable models for this task.
 
