@@ -915,6 +915,24 @@ else:
 See [ft260_uart.py](adapters/ft260_uart.py) for more implementation details. Note that on the CJMCU-260 module the NF0 operation mode selection pin is pulled up so that only I2C is enabled by default.
 One should connect NF0 pin to GND to be able to use UART and I2C at the same time.
 
+### Using UART port of the CH347T adapter
+The CH347T adapter also has UART port that can be used independently of the I2C and SPI buses. It is faster than FT260 UART but lack the hardware flow control (which is rarely used anyway). The following code illustrates using it to transmit message and receive it back having RX-TX pins interconnected.
+
+```python
+import time
+from dmmpy.adapters.ch347t_uart import find_uart, uart_init, uart_tx, UARTReceiver
+
+if dev := find_uart():
+    uart_init(dev, 19200)
+    with UARTReceiver(dev) as rx:
+        uart_tx(dev, b'Hello!')
+        time.sleep(.5)
+        print(bytes(rx.get()))
+    dev.close()
+else:
+    print('CH347T UART not found')
+```
+
 ## Which multimeter is better and why
 If you don't need exceptional precision, then all multimeters with 6000 counts and more will give you reasonably good results in any mode except for the current measuring. Here we will consider why the current measuring mode is so demanding and why popular UNI-T multimeters are actually the least usable models for this task.
 
