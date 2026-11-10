@@ -436,7 +436,9 @@ class Launcher:
         self.started_opts = None
 
         self.settings_frame = tk.Frame(self.root)
-        self.settings_frame.pack(side=tk.TOP)
+        self.settings_frame.pack(side=tk.TOP, expand=True, fill='both')
+        self.settings_frame.columnconfigure(0, weight=1)
+        self.settings_frame.columnconfigure(1, weight=8)
 
         self.start_btn = ttk.Button(self.root, text='Start', command=self.on_start_bt)
         self.start_btn.pack(side=tk.TOP, pady=15)
@@ -504,7 +506,7 @@ class Launcher:
             ), daemon=True)
         proc.start()
 
-    def pack_control(self, ctl, col, cspan=1, sticky='w', padx=HORIZ_PAD, pady=VERT_PAD):
+    def pack_control(self, ctl, col, cspan=1, sticky='ew', padx=HORIZ_PAD, pady=VERT_PAD):
         if not col:
             self.cur_row += 1
         ctl.grid(row=self.cur_row, column=col, padx=padx, pady=pady, columnspan=cspan, sticky=sticky)
