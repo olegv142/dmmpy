@@ -64,7 +64,7 @@ def uart_tx(dev, data: list[int]|bytes):
     """
     dlen = len(data)
     assert 0 < dlen <= 510
-    dev.write([0, dlen & 0xff, (dlen >> 8)] + data)
+    dev.write([0, dlen & 0xff, (dlen >> 8)] + list(data))
 
 def uart_rx(dev, tout=0) -> list[int]:
     """
