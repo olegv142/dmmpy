@@ -10,16 +10,14 @@ import logging
 import struct
 import threading
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from ch347t import MAX_PKT
+from .ch347t import MAX_PKT
 
 log = logging.getLogger('DEV')
 
 def find_uart():
     """Find device and open it"""
-    import device
-    from ch347t import DEVICE_VID, DEVICE_PID
+    from . import device
+    from .ch347t import DEVICE_VID, DEVICE_PID
     devs = device.find_hid_devices(DEVICE_VID, DEVICE_PID, ifnum=0)
     if not devs:
         return None

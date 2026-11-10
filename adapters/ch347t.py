@@ -10,8 +10,6 @@ import os
 import sys
 import logging
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
 log = logging.getLogger('DEV')
 
 DEVICE_VID = 0x1A86
@@ -29,7 +27,7 @@ READ_TOUT_MS = 20
 
 def find_device():
     """Find device and open it"""
-    import device
+    from . import device
     devs = device.find_hid_devices(DEVICE_VID, DEVICE_PID, ifnum=DEVICE_IFN)
     if not devs:
         return None

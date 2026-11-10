@@ -9,13 +9,9 @@ import logging
 import struct
 from typing import Any
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from device import Device
-from i2c import I2CDevice
-import ft260
-import cp2112
-import termocouple as tc
+from .device import Device
+from .i2c import I2CDevice
+from . import termocouple as tc
 
 log = logging.getLogger('DEV')
 
@@ -246,7 +242,7 @@ class INA228Device(INADevice):
 
 
 if __name__ == '__main__':
-    from i2c import FT260Adapter, CP2112Adapter
+    from .i2c import FT260Adapter, CP2112Adapter
 
     logging.basicConfig(level=logging.DEBUG) 
     devT = INA228Device if '--228' in sys.argv[1:] else INA226Device    

@@ -10,9 +10,7 @@ import struct
 import logging
 from typing import Any
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from spi import SPIDevice
+from .spi import SPIDevice
 
 log = logging.getLogger('DEV')
 

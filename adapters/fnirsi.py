@@ -9,10 +9,8 @@ import time
 import logging
 import struct
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-import bt_engine
-from device import Device, HIDMixin, BTMixin
+from . import bt_engine
+from .device import Device, HIDMixin, BTMixin
 
 log = logging.getLogger('DEV')
 

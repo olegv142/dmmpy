@@ -7,11 +7,9 @@ import sys
 import logging
 from typing import Any
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from device import Device, HIDMixin
-import ch347t
-import ch347t_spi
+from .device import Device, HIDMixin
+from . import ch347t
+from . import ch347t_spi
 
 log = logging.getLogger('DEV')
 

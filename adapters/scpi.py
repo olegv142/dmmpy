@@ -9,9 +9,7 @@ import sys
 import time
 import logging
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from device import CDCMixin, Device
+from .device import CDCMixin, Device
 
 log = logging.getLogger('DEV')
 

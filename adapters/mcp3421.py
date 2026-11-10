@@ -10,12 +10,8 @@ import struct
 import time
 from typing import Any
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from device import Device
-from i2c import FT260Adapter, CP2112Adapter, I2CDevice
-import ft260
-import cp2112
+from .device import Device
+from .i2c import I2CDevice
 
 log = logging.getLogger('DEV')
 
@@ -101,6 +97,7 @@ class MCP3421Device(I2CDevice):
         return 'V'
 
 if __name__ == '__main__':
+    from .i2c import FT260Adapter, CP2112Adapter
     logging.basicConfig(level=logging.DEBUG) 
     if dev := MCP3421Device.set_i2c_adapter(CP2112Adapter if '--2112' in sys.argv[1:] else FT260Adapter).open():
         print(dev)

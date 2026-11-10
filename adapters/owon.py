@@ -7,10 +7,8 @@ import sys
 import time
 import logging
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-import bt_engine
-from device import Device, BTMixin
+from . import bt_engine
+from .device import Device, BTMixin
 
 log = logging.getLogger('DEV')
 

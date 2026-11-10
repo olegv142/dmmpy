@@ -11,9 +11,7 @@ import sys
 import logging
 import struct
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from ch347t import find_device, READ_TOUT_MS, MAX_PKT
+from .ch347t import find_device, READ_TOUT_MS, MAX_PKT
 
 log = logging.getLogger('DEV')
 

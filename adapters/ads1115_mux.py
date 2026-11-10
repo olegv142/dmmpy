@@ -7,11 +7,9 @@ See https://www.ti.com/lit/ds/symlink/cd74hc4067.pdf
 import os
 import sys
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from device import Device
-from ads1115 import ADS1115Device
-import ft260
+from .device import Device
+from .ads1115 import ADS1115Device
+from . import ft260
 
 def channel_to_gpio_bits(channel: int) -> int:
     val = 0

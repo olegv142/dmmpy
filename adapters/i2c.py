@@ -7,12 +7,10 @@ import sys
 import logging
 from typing import Any
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-from device import Device, HIDMixin
-import ft260
-import cp2112
-import ch347t
+from .device import Device, HIDMixin
+from . import ft260
+from . import cp2112
+from . import ch347t
 
 log = logging.getLogger('DEV')
 

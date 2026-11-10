@@ -11,9 +11,7 @@ import logging
 from typing import Any
 from collections.abc import Callable
 
-if __package__: sys.path.append(os.path.realpath(os.path.dirname(__file__)))
-
-import bt_engine
+from . import bt_engine
 
 log = logging.getLogger('DEV')
 
