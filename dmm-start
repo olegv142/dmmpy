@@ -296,7 +296,7 @@ class ModelSelector(Setting):
     The model selector setting object. In addition to providing model selector UI it also
     manages configuration for all models.
     """
-    models = [t.MODEL_NAME + ' ' + ('BT' if t.IsBT else 'USB') for t in _supported_devices]
+    models = [t.MODEL_NAME + (' BT' if t.IsBT else '') for t in _supported_devices]
     cfg_path = '.config'
 
     def __init__(self, launcher, text):
@@ -402,12 +402,14 @@ class ModelSelector(Setting):
         # we expect notify(LauncherEvent.Starting) is already called
         assert self.start_cfg
         assert self.start_model
-        sep_idx = self.start_model.index(' ')
-        model_name = self.start_model[:sep_idx]
-        opts = ['-M', model_name]
-        if is_bt := (self.start_model[sep_idx+1:sep_idx+3] == 'BT'):
-            opts.append('-B')
-        cfg_file = model_name + '_' + ('BT' if is_bt else 'USB')
+        sm = self.start_model.split(' ')
+        model_name = sm[0]
+        if sm[1:2] == ['BT']:
+            opts = ['-M', model_name, '-B']
+            cfg_file = model_name + '_BT'
+        else:
+            opts = ['-M', model_name]
+            cfg_file = model_name + '_USB'
         if path := self.start_cfg.get('path', None):
             opts += ['--path', path]
         return opts + ['data', '-g', '--cfg-save', '.cfg/' + cfg_file]

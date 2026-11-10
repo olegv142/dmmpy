@@ -317,25 +317,25 @@ By default, the **dmm-get** tool expects the UT61X+ multimeter as the target dev
 
 | Vendor  | Model family                                 | Command line options  | Model label in **dmm-start** UI |
 |---------|----------------------------------------------|-----------------------|------------------------------------|
-| UNI-T   | UT61B/D/E+                                   | -M UT61X+             | UT61X+ USB                         |
+| UNI-T   | UT61B/D/E+                                   | -M UT61X+             | UT61X+                             |
 |         | UT61B/D/E+ with UT-D07B Bluetooth adapter    | -M UT61X+ -B          | UT61X+ BT                          |
 |         | UT60BT                                       | -M UT60BT -B          | UT60BT BT                          |
 | OWON    | Bluetooth multimeters                        | -M OWON -B            | OWON BT                            |
-|         | Desktop multimeters with USB port            | -M SCPI-DMM           | SCPI-DMM USB                       |
-|         | Programmable power supply with USB port      | -M SCPI-CV            | SCPI-CV USB                        |
+|         | Desktop multimeters with USB port            | -M SCPI-DMM           | SCPI-DMM                           |
+|         | Programmable power supply with USB port      | -M SCPI-CV            | SCPI-CV                            |
 | ANENG   | AN9002 Bluetooth multimeter                  | -M ANENG -B           | ANENG BT                           |
 | ZOTEK/BSIDE | ZT-300AB Bluetooth multimeter            | -M ANENG -B           | ANENG BT                           |
-| FNIRSI  | FNAC28 USB tester                            | -M FNAC28             | FNAC28 USB                         |
-|         | FNB48P USB tester via USB connection         | -M FNB48P             | FNB48P USB                         |
+| FNIRSI  | FNAC28 USB tester                            | -M FNAC28             | FNAC28                             |
+|         | FNB48P USB tester via USB connection         | -M FNB48P             | FNB48P                             |
 |         | FNB48P USB tester via Bluetooth              | -M FNB48P -B          | FNB48P BT                          |
-|         | FNB58 USB tester via USB connection          | -M FNB58              | FNB58 USB                          |
+|         | FNB58 USB tester via USB connection          | -M FNB58              | FNB58                              |
 |         | FNB58 USB tester via Bluetooth               | -M FNB58 -B           | FNB58 BT                           |
-|         | FNB-C2 USB tester                            | -M FNB-C2             | FNB-C2 USB                         |
-| TI      | INA226 with I2C to USB adapter               | -M INA226             | INA226 USB                         |
-|         | INA228 with I2C to USB adapter               | -M INA228             | INA228 USB                         |
-|         | ADS1115 with I2C to USB adapter              | -M ADS1115            | ADS1115 USB                        |
-|         | ADS1220 with SPI to USB adapter              | -M ADS1220            | ADS1220 USB                        |
-| Microchip | MCP3421 with I2C to USB adapter            | -M MCP3421            | MCP3421 USB                        |
+|         | FNB-C2 USB tester                            | -M FNB-C2             | FNB-C2                             |
+| TI      | INA226 with I2C to USB adapter               | -M INA226             | INA226                             |
+|         | INA228 with I2C to USB adapter               | -M INA228             | INA228                             |
+|         | ADS1115 with I2C to USB adapter              | -M ADS1115            | ADS1115                            |
+|         | ADS1220 with SPI to USB adapter              | -M ADS1220            | ADS1220                            |
+| Microchip | MCP3421 with I2C to USB adapter            | -M MCP3421            | MCP3421                            |
 
 ### Working with INA226/228 current & voltage monitors
 The INA226/228 chips are typically sold with shunt already soldered to the board. Yet there are some number of steps required before you can read data from them:
