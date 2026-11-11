@@ -19,7 +19,7 @@ class ADS1220Device(SPIDevice):
     MODEL_NAME = 'ADS1220'
     NCHANNELS  = 2
     TOUT       = .5
-    IDLE_DELAY = .05
+    IDLE_DELAY = .05 # 20 sps
 
     # Reference voltage source
     VREF_INT  = 0 # Internal 2.048V reference selected
@@ -73,6 +73,8 @@ class ADS1220Device(SPIDevice):
     FIR    = FIR_50Hz # 50Hz reject
     IDAC   = IDAC_Off # IDAC disabled
     IMUX   = [IMUX_Off, IMUX_Off]
+    TURBO  = 0 # enables turbo mode (2x rate)
+    BCS    = 0 # enables 10µA, burn-out current sources
 
     # The gain and mux for two possible readout channels
     GAIN = [1, 1]
@@ -140,6 +142,20 @@ class ADS1220Device(SPIDevice):
             return True
         return False
 
+    def set_turbo(self, en: int) -> bool:
+        """Set turbo mode"""
+        if 0 <= en <= 1:
+            self.TURBO = en
+            return True
+        return False
+
+    def set_bcs(self, en: int) -> bool:
+        """Enable burn-out current sources"""
+        if 0 <= en <= 1:
+            self.BCS = en
+            return True
+        return False
+
     def set_double_sampling(self, cnt: int):
         """Setup double sampling"""
         self.DS = cnt
@@ -176,6 +192,10 @@ class ADS1220Device(SPIDevice):
                 return self.set_imux(0, int(val))
             if lkey == 'i2mux':
                 return self.set_imux(1, int(val))
+            if lkey == 'turbo':
+                return self.set_turbo(int(val))
+            if lkey == 'bcs':
+                return self.set_bcs(int(val))
             if lkey == 'ds':
                 self.set_double_sampling(int(val))
                 return True
@@ -231,7 +251,7 @@ class ADS1220Device(SPIDevice):
         BYPASS = 1 if gain < 8 else 0
         cfg = [
                 (mux << 4) + (G << 1) + BYPASS,
-                ((mux == self.MUX_TS) << 1),
+                (self.TURBO << 4) + ((mux == self.MUX_TS) << 1) + self.BCS,
                 (self.VREF << 6) + (self.FIR << 4) + self.IDAC,
                 (self.IMUX[0] << 5) + (self.IMUX[1] << 2)
             ]
@@ -245,7 +265,8 @@ class ADS1220Device(SPIDevice):
                 return None
             wait = self.TOUT
             while True:
-                idle_sleep(self.IDLE_DELAY)
+                delay = self.IDLE_DELAY / (self.TURBO + 1)
+                idle_sleep(delay)
                 nrdy = self.adapter.gpio_get_pin(self.RDY_IN)
                 if nrdy is None:
                     log.error('ADS1220 failed to query conversion status')
@@ -259,7 +280,7 @@ class ADS1220Device(SPIDevice):
                         log.error('ADS1220 failed to query conversion result')
                         self.disconnected = True
                     return data
-                wait -= self.IDLE_DELAY
+                wait -= delay
                 if wait <= 0:
                     log.error('ADS1220 conversion timeout')
                     return None                

@@ -307,6 +307,8 @@ Some devices need special settings not applicable to other device. There is a sp
 | idac           | Selects the ADC excitation current source mode                     | 0 (off)          | ADS1220          |
 | i1mux          | Selects the first excitation current source connection             | 0 (off)          | ADS1220          |
 | i2mux          | Selects the second excitation current source connection            | 0 (off)          | ADS1220          |
+| turbo          | Enables ADC turbo mode                                             | 0 (off)          | ADS1220          |
+| bcs            | Enables burn-out current sources                                   | 0 (off)          | ADS1220          |
 | cs             | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220          |
 | rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6                | ADS1220          |
 | ds             | Enables double sampling (offset compensation) and sets sample count| 0                | ADS1220          |
