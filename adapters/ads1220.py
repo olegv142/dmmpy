@@ -69,14 +69,13 @@ class ADS1220Device(SPIDevice):
     # ADC configuration
     SPI_CS = 0 # CS line index
     RDY_IN = 6 # DRDY GPIO pin
-    BYPASS = True # bypass PGA for unit PGA gain (gain < 8)
     VREF   = VREF_INT # 2.048V internal
     FIR    = FIR_50Hz # 50Hz reject
     IDAC   = IDAC_Off # IDAC disabled
     IMUX   = [IMUX_Off, IMUX_Off]
 
     # The gain and mux for two possible readout channels
-    GAIN = [0, 0] # zero gain is the same as 1 but enforcing PGA bypass
+    GAIN = [1, 1]
     MUX  = [MUX_0_1, MUX_3_G]
 
     # Double sampling
@@ -85,7 +84,7 @@ class ADS1220Device(SPIDevice):
     def set_gain(self, gain: int, chan: int = 0) -> bool:
         """Set PGA gain for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
-        if gain in (0, 1, 2, 4, 8, 16, 32, 64, 128):
+        if gain in (1, 2, 4, 8, 16, 32, 64, 128):
             self.GAIN[chan] = gain
             return True
         return False
@@ -111,10 +110,6 @@ class ADS1220Device(SPIDevice):
             self.RDY_IN = rdy_pin
             return True
         return False
-
-    def set_bypass(self, active: bool|int):
-        """Set PGA bypass flag"""
-        self.BYPASS = bool(active)
 
     def set_vref(self, vref: int) -> bool:
         """Set reference voltage source"""
@@ -171,9 +166,6 @@ class ADS1220Device(SPIDevice):
                 return self.set_cs_pin(int(val))
             if lkey == 'rdy':
                 return self.set_rdy_pin(int(val))
-            if lkey == 'bypass':
-                self.set_bypass(int(val))
-                return True
             if lkey == 'vref':
                 return self.set_vref(int(val))
             if lkey == 'fir':
@@ -236,10 +228,9 @@ class ADS1220Device(SPIDevice):
         if not self.is_connected():
             return None
         G = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7}.get(gain, 0)
-        # zero gain forces PGA bypass
-        PGA_BYPASS = 1 if gain == 0 or (self.BYPASS and gain < 8) else 0
+        BYPASS = 1 if gain < 8 else 0
         cfg = [
-                (mux << 4) + (G << 1) + PGA_BYPASS,
+                (mux << 4) + (G << 1) + BYPASS,
                 ((mux == self.MUX_TS) << 1),
                 (self.VREF << 6) + (self.FIR << 4) + self.IDAC,
                 (self.IMUX[0] << 5) + (self.IMUX[1] << 2)

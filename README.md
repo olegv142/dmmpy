@@ -1,6 +1,7 @@
 # A cross-platform tool for recording and plotting digital multimeter and ADC data.
 
-This repository provides simple alternative to vendor data collection programs. It works uniformly on Windows, Linux and MacOS. One can use it either from command line or GUI. Since the code is written in python it may be easily incorporated onto your complex measuring or automation system. The project provides:
+This repository provides simple alternative to vendor data collection programs. It works uniformly on Windows, Linux and MacOS. One can use it either from command line or GUI.
+Support for various I2C and SPI ADC makes it a convenient tool for ADC testing and experimenting. Since the code is written in python it may be easily incorporated onto your complex measuring or automation system. The project provides:
  - single CLI tool (**dmm-get**) for data collection and visualization
  - simple GUI frontend application (**dmm-start**) with the same capabilities as CLI tool
  - support for USB and Bluetooth communication channels
@@ -285,31 +286,30 @@ Working with Bluetooth adapter conceptually is not different from using USB. Jus
 ## Setting device-specific parameters
 Some devices need special settings not applicable to other device. There is a special command line option to setup such parameters *--param*. It should be followed by KEY=VAL pair. To set multiple parameters this option may be used multiple times like *--param KEY1=VAL1 --param KEY2=VAL2 ..*. To setup parameters in **dmm-start** [data acquisition launcher GUI](#data-acquisition-launcher) one should use *device parameters* field separating *key=value* pairs by comma. The following table lists all possible parameters and notes where they are applicable. Note that the parameter names are case-insensitive.
 
-| Parameter name | Meaning                                                            | Default         | Applicable to    |
-|----------------|--------------------------------------------------------------------|-----------------|------------------|
-| tout           | Data read timeout in seconds                                       | device specific | any device       |
-| vid, pid       | The USB VID, PID numbers in case you need to change default ones   | device specific | USB device       |
-| btname         | Bluetooth device name in case you need to change default one       | device specific | BT device        |
-| baud           | The USB CDC device serial baud rate                                | 115200          | USB CDC device   |
-| i2c            | I2C to USB adapter for INA device {FT260,CP2112,CH347T}            | FT260           | I2C device       |
-| addr           | I2C address                                                        | device specific | I2C device       |
-| shunt          | Shunt resistance for INA current & voltage monitors                | 0.1 Ohm         | INA226/228       |
-| range          | INA228 shunt voltage range {0,1}                                   | 0               | INA228           |
-| tempco         | INA228 shunt temperature coefficient                               | 0               | INA228           |
-| amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}                 | cv              | INA228           |
-| gain           | ADC amplifier gain                                                 | 0               | MCP3421, ADS1115, ADS1220 |
-| again          | Alternative channel ADC amplifier gain                             | 0               | ADS1115, ADS1220          |
-| mux            | ADC input multiplexer configuration                                | device specific | ADS1115, ADS1220          |
-| amux           | Alternative channel ADC input multiplexer configuration            | device specific | ADS1115, ADS1220          |
-| bypass         | Enables bypass of the ADC internal amplifier if possible           | 1               | ADS1220          |
-| vref           | Selects the source of ADC reference voltage                        | 0 (internal)    | ADS1220          |
-| fir            | Selects ADC filtering mode                                         | 2 (50Hz reject) | ADS1220          |
-| idac           | Selects the ADC excitation current source mode                     | 0 (off)         | ADS1220          |
-| i1mux          | Selects the first excitation current source connection             | 0 (off)         | ADS1220          |
-| i2mux          | Selects the second excitation current source connection            | 0 (off)         | ADS1220          |
-| cs             | SPI Chip Select pin used, disables using CS signal if set to -1    | 0               | ADS1220          |
-| rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6               | ADS1220          |
-| ds             | Enables double sampling (offset compensation) and sets sample count| 0               | ADS1220          |
+| Parameter name | Meaning                                                            | Default          | Applicable to    |
+|----------------|--------------------------------------------------------------------|------------------|------------------|
+| tout           | Data read timeout in seconds                                       | device specific  | any device       |
+| vid, pid       | The USB VID, PID numbers in case you need to change default ones   | device specific  | USB device       |
+| btname         | Bluetooth device name in case you need to change default one       | device specific  | BT device        |
+| baud           | The USB CDC device serial baud rate                                | 115200           | USB CDC device   |
+| i2c            | I2C to USB adapter for INA device {FT260,CP2112,CH347T}            | FT260            | I2C device       |
+| addr           | I2C address                                                        | device specific  | I2C device       |
+| shunt          | Shunt resistance for INA current & voltage monitors                | 0.1 Ohm          | INA226/228       |
+| range          | INA228 shunt voltage range {0,1}                                   | 0                | INA228           |
+| tempco         | INA228 shunt temperature coefficient                               | 0                | INA228           |
+| amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}                 | cv               | INA228           |
+| gain           | ADC amplifier gain                                                 | 0 (ADS1115) or 1 | MCP3421, ADS1115, ADS1220 |
+| again          | Alternative channel ADC amplifier gain                             | 0                | ADS1115, ADS1220          |
+| mux            | ADC input multiplexer configuration                                | device specific  | ADS1115, ADS1220          |
+| amux           | Alternative channel ADC input multiplexer configuration            | device specific  | ADS1115, ADS1220          |
+| vref           | Selects the source of ADC reference voltage                        | 0 (internal)     | ADS1220          |
+| fir            | Selects ADC filtering mode                                         | 2 (50Hz reject)  | ADS1220          |
+| idac           | Selects the ADC excitation current source mode                     | 0 (off)          | ADS1220          |
+| i1mux          | Selects the first excitation current source connection             | 0 (off)          | ADS1220          |
+| i2mux          | Selects the second excitation current source connection            | 0 (off)          | ADS1220          |
+| cs             | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220          |
+| rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6                | ADS1220          |
+| ds             | Enables double sampling (offset compensation) and sets sample count| 0                | ADS1220          |
 
 ## Working with other supported devices
 ### Specifying device model
@@ -405,7 +405,7 @@ The default value of the *gain* is 0 so that ADS1115 will use its full scale ran
 In case you are going to read alternative data channel you may configure its multiplexing and gain by specifying *amux* and *again* parameters. So you will be able to sample and plot two voltage sources connected to different ADS1115 inputs. The default value of *again* is 0 (full scale range of 6.144V). The default *amux* is 7 so you will sample AIN3 input relative to the ground.
 
 ### Working with ADS1220 ADC boards
-To be able to receive data from ADS1220 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter. Typical ADS1220 board has two power inputs (digital and analog) so that you have to connect both of them. The CS signal should be connected to CS0 pin of the adapter. The DRDY signal should be connected to IO6 pin of the adapter. Both pins can be changed by setting *cs* and *rdy* parameters if necessary. The *gain* and *again* parameters specify the ADC internal amplifier gain. They should be choosen from {0, 1, 2, 4, 8, 16, 32, 64, 128}. The gain 0 is the default. It has the same effect as gain 1 with additional forcing internal amplifier bypass to reduce noise and improve input signal range. Note that using gains 8 and above will engage internal amplifier. This will increase noise slightly and reduce possible input voltage range. At high gain settings the input voltage at both positive and negative inputs should be close to the half of the power voltage.
+To be able to receive data from ADS1220 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter. Typical ADS1220 board has two power inputs (digital and analog) so that you have to connect both of them. The CS signal should be connected to CS0 pin of the adapter. The DRDY signal should be connected to IO6 pin of the adapter. Both pins can be changed by setting *cs* and *rdy* parameters if necessary. The *gain* and *again* parameters specify the ADC internal amplifier gain. They should be selected from the set {1, 2, 4, 8, 16, 32, 64, 128}. The gain 1 is the default. Note that using gains 8 and above will engage internal amplifier. This will increase noise slightly and reduce possible input voltage range. At high gain settings the input voltage at both positive and negative inputs should be close to the half of the power voltage. In particular, you should never use a single ended input at gain 8 and above.
 
 The *mux* and *amux* parameters determine ADC input multiplexer configuration for the main and alternative readout channels. Their possible values are listed in the following table
 
@@ -424,7 +424,7 @@ The *mux* and *amux* parameters determine ADC input multiplexer configuration fo
 | 10            | AIN2              | AGND              |
 | 11            | AIN3              | AGND              |
 
-The next parameters engage internal connections for monitoring purposes. The last value (15) is used as a flag to toggle temperature sensor mode.
+The following multiplexer settings engage internal connections for monitoring purposes. The last value (15) is used as a flag to toggle temperature sensor mode.
 
 | mux parameter | ADC input                                  | notes                             |
 |---------------|--------------------------------------------|-----------------------------------|
