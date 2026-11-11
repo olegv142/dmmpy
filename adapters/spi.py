@@ -4,6 +4,7 @@ Bases classes for devices using SPI communication bus
 
 import os
 import sys
+import math
 import logging
 from typing import Any
 
@@ -21,8 +22,8 @@ class SPIAdapter:
     DEVICE_IFN = None
     NAME = None
 
-    def __init__(self, dev, mode: int):
-        """Initialize SPI bus given the clock mode (0..3)"""
+    def __init__(self, dev, mode: int, max_clk_mhz: float):
+        """Initialize SPI bus given the clock mode (0..3) and maximum clock frequency"""
         raise NotImplementedError()
 
     def spi_tx(self, data: list[int]) -> list[int]|None:
@@ -55,11 +56,12 @@ class CH347TSPIAdapter(SPIAdapter):
     DEVICE_IFN = ch347t.DEVICE_IFN
     NAME = 'CH347T'
 
-    def __init__(self, dev, mode: int):
-        """Initialize SPI bus given the clock mode (0..3)"""
+    def __init__(self, dev, mode: int, max_clk_mhz: float):
+        """Initialize SPI bus given the clock mode (0..3) and maximum clock frequency"""
         assert 0 <= mode < 4
         self.dev = dev
-        ch347t_spi.spi_init(self.dev, mode)
+        clk_div = min(ch347t_spi.SPIClock7, math.ceil(60 / max_clk_mhz) - 1)
+        ch347t_spi.spi_init(self.dev, mode, clk = clk_div)
 
     def spi_tx(self, data: list[int]) -> list[int]|None:
         """Transmits data. Returns data received or None if failed."""
@@ -97,6 +99,7 @@ class SPIDevice(Device, HIDMixin):
     DEVICE_PID = SPI_ADAPTER_TYPE.DEVICE_PID
     DEVICE_IFN = SPI_ADAPTER_TYPE.DEVICE_IFN
     SPI_MODE = 1 # SPI clock mode
+    MAX_CLK_MHZ = None # max clock frequency in MHz
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -122,7 +125,7 @@ class SPIDevice(Device, HIDMixin):
         """
         self.channels = nchannels
         if self.adapter is None:
-            self.adapter = self.SPI_ADAPTER_TYPE(self.dev, self.SPI_MODE)
+            self.adapter = self.SPI_ADAPTER_TYPE(self.dev, self.SPI_MODE, self.MAX_CLK_MHZ)
 
     def get_channel(self, data: Any) -> int | None:
         """

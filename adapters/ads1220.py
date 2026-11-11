@@ -16,10 +16,11 @@ log = logging.getLogger('DEV')
 
 class ADS1220Device(SPIDevice):
     """ADS1220 ADC adapter"""
-    MODEL_NAME = 'ADS1220'
-    NCHANNELS  = 2
-    TOUT       = .5
-    IDLE_DELAY = .05 # 20 sps
+    MODEL_NAME  = 'ADS1220'
+    MAX_CLK_MHZ = 6.6 # max clock frequency in MHz
+    NCHANNELS   = 2
+    TOUT        = .5
+    IDLE_DELAY  = .05 # 20 sps
 
     # Reference voltage source
     VREF_INT  = 0 # Internal 2.048V reference selected
