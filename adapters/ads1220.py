@@ -243,6 +243,9 @@ class ADS1220Device(SPIDevice):
         if self.SPI_CS >= 0:
             self.adapter.spi_set_cs(self.SPI_CS, active)
 
+    def conversion_delay(self):
+        return self.IDLE_DELAY / (self.TURBO + 1)
+
     def exec_conversion_raw(self, mux: int, gain: int, idle_sleep=time.sleep) -> bytes|None:
         """Executes single conversion given MUX and gain value. Returns raw bytes result or None on error."""
         if not self.is_connected():
@@ -265,7 +268,7 @@ class ADS1220Device(SPIDevice):
                 return None
             wait = self.TOUT
             while True:
-                delay = self.IDLE_DELAY / (self.TURBO + 1)
+                delay = self.conversion_delay()
                 idle_sleep(delay)
                 nrdy = self.adapter.gpio_get_pin(self.RDY_IN)
                 if nrdy is None:
@@ -303,10 +306,8 @@ class ADS1220Device(SPIDevice):
             val = struct.unpack('>h', bytes(data[:2]))[0]
             return val * 0.03125 / 4
 
-    def exec_conversion(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
-        """Execute conversion with optional double sampling. Returns floating point value or None on error."""
-        if self.DS <= 0 or mux == self.MUX_TS:
-            return self.exec_conversion_once(mux, gain, idle_sleep)
+    def exec_conversion_dbl_sampling(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
+        """Execute conversion with double sampling. Returns floating point value or None on error."""
         total = 0.
         for _ in range(self.DS):
             val = self.exec_conversion_once(mux, gain, idle_sleep)
@@ -318,6 +319,12 @@ class ADS1220Device(SPIDevice):
                 return None
             total += val - off
         return total / self.DS
+
+    def exec_conversion(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
+        """Execute conversion with optional double sampling. Returns floating point value or None on error."""
+        if self.DS <= 0 or mux == self.MUX_TS:
+            return self.exec_conversion_once(mux, gain, idle_sleep)
+        return self.exec_conversion_dbl_sampling(mux, gain, idle_sleep)
 
     def init(self, nchannels: int = 1):
         """

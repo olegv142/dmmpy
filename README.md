@@ -439,6 +439,8 @@ There are quite a lot of configuration parameters that can be used with ADS1220.
 
 In addition to ADS1220 features the **dmmpy** implements *double sampling* routine that can be activated by setting *ds* parameter to positive integer value. It uses device internal switch clamping ADC input to sample zero offset voltage. This offset is then subtracted from the measured signal. With ds=N the routine samples every input N times and subtracts offset also sampled N times. The resulting value is the average from these samples with offset compensated and noise reduced due to oversampling. Using this routine the zero offset and noise can be reduced down to the small fraction of the microvolt.
 
+To speed up readout, especially with double sampling enabled, one can activate ADC turbo mode by setting the *turbo=1* parameter. It will reduce conversion time by the factor of two.
+
 # Working with GUI
 The GUI workflow is built around **dmm-start** script that provides convenient UI for setting **dmm-get** options and launching data acquisition in separate processes. The single instance of **dmm-start** UI can launch any number of data acquisition processes working in parallel, saving data to separate files and showing collected data in their own data plot windows. The following figure illustrates using data acquisition GUI reading data from 3 multimeters simultaneously on Raspberry Pi5.
 
