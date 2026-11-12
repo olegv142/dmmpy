@@ -205,17 +205,17 @@ class ADS1220Device(SPIDevice):
             return False
         return super().set_param(key, val)
 
-    def _tx_cmd(self, cmd: int, data: list[int] = []) -> list[int]|None:
+    def _tx_cmd(self, cmd_data: list[int] = []) -> list[int]|None:
         """Transmits command padded with data and returns response or None on failure"""
-        resp = self.adapter.spi_tx([cmd] + data)
+        resp = self.adapter.spi_tx(cmd_data)
         if resp is None:
-            log.error('ADS1220 command %x failed', cmd)
+            log.error('ADS1220 command %x failed', cmd_data[0])
             return None
         return resp
 
     def _send_cmd(self, cmd: int, data: list[int] = []) -> list[int]|None:
         """Same as _tx_cmd but does not return response to the command itself"""
-        if resp := self._tx_cmd(cmd, data):
+        if resp := self._tx_cmd([cmd] + data):
             return resp[1:]
         return None
 
@@ -234,6 +234,16 @@ class ADS1220Device(SPIDevice):
     def _rreg(self, reg: int, nregs: int) -> list[int]|None:
         """Read one or more registers starting from the given reg index"""
         return self._send_cmd(0x20 + (reg << 2) + nregs - 1, [0] * nregs)
+
+    def _write_verify_reg(self, reg: int, data: list[int]) -> bool:
+        nregs = len(data)
+        res = self._tx_cmd(
+                [0x40 + (reg << 2) + nregs - 1] + data +
+                [0x20 + (reg << 2) + nregs - 1] + [0] * nregs
+            )
+        if res is None:
+            return False
+        return res[2+nregs:] == data
 
     def _rdata(self) -> list[int]|None:
         """Read conversion data"""
@@ -261,7 +271,7 @@ class ADS1220Device(SPIDevice):
             ]
         try:
             self._cs(True)
-            res = self._wreg(0, cfg) and self._rreg(0, len(cfg)) == cfg and self._start()
+            res = self._write_verify_reg(0, cfg) and self._start()
             self._cs(False)
             if not res:
                 log.error('ADS1220 failed to start conversion')
