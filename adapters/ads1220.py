@@ -74,6 +74,7 @@ class ADS1220Device(SPIDevice):
     FIR    = FIR_50Hz # 50Hz reject
     IDAC   = IDAC_Off # IDAC disabled
     IMUX   = [IMUX_Off, IMUX_Off]
+    BYPASS = 1 # bypass PGA if gain < 8
     TURBO  = 0 # enables turbo mode (2x rate)
     BCS    = 0 # enables 10µA, burn-out current sources
 
@@ -262,9 +263,8 @@ class ADS1220Device(SPIDevice):
         if not self.is_connected():
             return None
         G = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7}.get(gain, 0)
-        BYPASS = 1 if gain < 8 else 0
         cfg = [
-                (mux << 4) + (G << 1) + BYPASS,
+                (mux << 4) + (G << 1) + (self.BYPASS if gain else 0),
                 (self.TURBO << 4) + ((mux == self.MUX_TS) << 1) + self.BCS,
                 (self.VREF << 6) + (self.FIR << 4) + self.IDAC,
                 (self.IMUX[0] << 5) + (self.IMUX[1] << 2)
