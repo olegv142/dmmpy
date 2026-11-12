@@ -66,7 +66,10 @@ class ADS1220Device(SPIDevice):
     MUX_VREF_4 = 12 # (VREFPx – VREFNx) / 4 monitor (PGA bypassed)
     MUX_AVDD_4 = 13 # (AVDD – AVSS) / 4 monitor (PGA bypassed)
     MUX_SHORT  = 14 # AINP and AINN shorted to (AVDD + AVSS) / 2
-    MUX_TS = MUX_RESERVED = 15 # Activates TS mode
+    # special mux values
+    MUX_TS = MUX_RESERVED  = 15 # Activates TS mode
+    MUX_0_1_CHOP           = 16 # Switching polarity of IN0 and IN1 to compensate for offset
+    MUX_2_3_CHOP = MUX_MAX = 17 # Switching polarity of IN0 and IN1 to compensate for offset
     # ADC configuration
     SPI_CS = 0 # CS line index
     RDY_IN = 6 # DRDY GPIO pin
@@ -82,8 +85,9 @@ class ADS1220Device(SPIDevice):
     GAIN = [1, 1]
     MUX  = [MUX_0_1, MUX_3_G]
 
-    # Double sampling
-    DS = 0 # disabled
+    # Special modes
+    OC = 0 # offset compensation
+    OS = 0 # oversampling
 
     def set_gain(self, gain: int, chan: int = 0) -> bool:
         """Set PGA gain for the given readout channel"""
@@ -96,7 +100,7 @@ class ADS1220Device(SPIDevice):
     def set_mux(self, mux: int, chan: int = 0) -> bool:
         """Set input MUX configuration for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
-        if 0 <= mux < 16:
+        if 0 <= mux <= self.MUX_MAX:
             self.MUX[chan] = mux
             return True
         return False
@@ -158,9 +162,19 @@ class ADS1220Device(SPIDevice):
             return True
         return False
 
-    def set_double_sampling(self, cnt: int):
-        """Setup double sampling"""
-        self.DS = cnt
+    def set_offset_compensation(self, en: int) -> bool:
+        """Set offset compensation mode"""
+        if 0 <= en <= 1:
+            self.OC = en
+            return True
+        return False
+
+    def set_oversampling(self, cnt: int) -> bool:
+        """Set oversampling mode"""
+        if cnt >= 0:
+            self.OS = cnt
+            return True
+        return False
 
     def set_param(self, key: str, val: str|float) -> bool:
         """
@@ -177,9 +191,6 @@ class ADS1220Device(SPIDevice):
                 return self.set_mux(int(val), 0)
             if lkey == 'amux':
                 return self.set_mux(int(val), 1)
-            if lkey == 'ats':
-                self.set_ts_mode(int(val), 1)
-                return True
             if lkey == 'cs':
                 return self.set_cs_pin(int(val))
             if lkey == 'rdy':
@@ -198,9 +209,10 @@ class ADS1220Device(SPIDevice):
                 return self.set_turbo(int(val))
             if lkey == 'bcs':
                 return self.set_bcs(int(val))
-            if lkey == 'ds':
-                self.set_double_sampling(int(val))
-                return True
+            if lkey == 'oc':
+                return self.set_offset_compensation(int(val))
+            if lkey == 'os':
+                return self.set_oversampling(int(val))
         except Exception as e:
             log.debug(e, exc_info=True)
             return False
@@ -317,25 +329,45 @@ class ADS1220Device(SPIDevice):
             val = struct.unpack('>h', bytes(data[:2]))[0]
             return val * 0.03125 / 4
 
-    def exec_conversion_dbl_sampling(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
-        """Execute conversion with double sampling. Returns floating point value or None on error."""
-        total = 0.
-        for _ in range(self.DS):
-            val = self.exec_conversion_once(mux, gain, idle_sleep)
-            off = self.exec_conversion_once(self.MUX_SHORT,
+    def exec_conversion_compensate_offset(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
+        """Execute conversion with offset compensation. Returns floating point value or None on error."""
+        val = self.exec_conversion_once(mux, gain, idle_sleep)
+        off = self.exec_conversion_once(self.MUX_SHORT,
                     0 if (mux == self.MUX_VREF_4 or mux == self.MUX_AVDD_4) else gain,
                     idle_sleep
                 )
-            if val is None or off is None:
-                return None
-            total += val - off
-        return total / self.DS
+        if val is None or off is None:
+            return None
+        return val - off
+
+    def exec_conversion_chopped(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
+        """Execute conversion with chopping (swapping input polarity)"""
+        if mux == self.MUX_0_1_CHOP:
+            inputs = [self.MUX_0_1, self.MUX_1_0]
+        elif mux == self.MUX_2_3_CHOP:
+            inputs = [self.MUX_2_3, self.MUX_3_2]
+        else:
+            log.error('invalid MUX=%d', mux)
+            return None
+        vals = [self.exec_conversion_once(m, gain, idle_sleep) for m in inputs]
+        if any(val is None for val in vals):
+            return None
+        return (vals[0] - vals[1]) / 2
 
     def exec_conversion(self, mux: int, gain: int = 0, idle_sleep=time.sleep) -> float|None:
-        """Execute conversion with optional double sampling. Returns floating point value or None on error."""
-        if self.DS <= 0 or mux == self.MUX_TS:
-            return self.exec_conversion_once(mux, gain, idle_sleep)
-        return self.exec_conversion_dbl_sampling(mux, gain, idle_sleep)
+        """Execute conversion(s) with optional oversampling. Returns floating point value or None on error."""
+        total, cnt = 0, max(1, self.OS)
+        for _ in range(cnt): # oversampling loop
+            if mux > self.MUX_TS:
+                val = self.exec_conversion_chopped(mux, gain, idle_sleep)
+            elif not self.OC or mux == self.MUX_TS:
+                val = self.exec_conversion_once(mux, gain, idle_sleep)
+            else:
+                val = self.exec_conversion_compensate_offset(mux, gain, idle_sleep)
+            if val is None:
+                return None
+            total += val
+        return total / cnt
 
     def init(self, nchannels: int = 1):
         """

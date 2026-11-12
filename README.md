@@ -307,11 +307,12 @@ Some devices need special settings not applicable to other device. There is a sp
 | idac           | Selects the ADC excitation current source mode                     | 0 (off)          | ADS1220          |
 | i1mux          | Selects the first excitation current source connection             | 0 (off)          | ADS1220          |
 | i2mux          | Selects the second excitation current source connection            | 0 (off)          | ADS1220          |
-| turbo          | Enables ADC turbo mode                                             | 0 (off)          | ADS1220          |
-| bcs            | Enables burn-out current sources                                   | 0 (off)          | ADS1220          |
+| turbo          | Enables ADC turbo mode                                             | 0                | ADS1220          |
+| bcs            | Enables burn-out current sources                                   | 0                | ADS1220          |
 | cs             | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220          |
 | rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6                | ADS1220          |
-| ds             | Enables double sampling (offset compensation) and sets sample count| 0                | ADS1220          |
+| oc             | Enables offset compensation                                        | 0                | ADS1220          |
+| os             | Enables oversampling                                               | 0                | ADS1220          |
 
 ## Working with other supported devices
 ### Specifying device model
@@ -435,11 +436,20 @@ The following multiplexer settings engage internal connections for monitoring pu
 | 14            | AINP and AINN shorted to (AVDD + AVSS) / 2 | used for offset compensation      |
 | 15            | activates temperature sensor reading       | set TS bit in configuration reg#1 |
 
-There are quite a lot of configuration parameters that can be used with ADS1220. They are listed in the [Setting device-specific parameters](#setting-device-specific-parameters) section. For there meaning please consult the device [datasheet](https://www.ti.com/lit/ds/symlink/ads1220.pdf).
+The following multiplexer settings activates 'chopping' to improve signal quality. The voltage across positive and negative inputs is samples twice. The second sample is taken with inputs polarity swapped. After subtracting the second result from the fist and dividing by two we end up with the result having zero offset compensated and the noise reduced by sqrt(2). The ADS1220 does not do it by itself (in contrast to ADS1263) but **dmmpy** implements this processing for two pairs of inputs.
 
-In addition to ADS1220 features the **dmmpy** implements *double sampling* routine that can be activated by setting *ds* parameter to positive integer value. It uses device internal switch clamping ADC input to sample zero offset voltage. This offset is then subtracted from the measured signal. With ds=N the routine samples every input N times and subtracts offset also sampled N times. The resulting value is the average from these samples with offset compensated and noise reduced due to oversampling. Using this routine the zero offset and noise can be reduced down to the small fraction of the microvolt.
+| mux parameter | ADC input                                  |
+|---------------|--------------------------------------------|
+| 16            | AIN0, AIN1 chopped                         |
+| 17            | AIN2, AIN3 chopped                         |
 
-To speed up readout, especially with double sampling enabled, one can activate ADC turbo mode by setting the *turbo=1* parameter. It will reduce conversion time by the factor of two.
+There are quite a lot of configuration parameters that can be used with ADS1220. They are listed in the [Setting device-specific parameters](#setting-device-specific-parameters) section. For their meaning please consult the device [datasheet](https://www.ti.com/lit/ds/symlink/ads1220.pdf).
+
+In addition to ADS1220 features the **dmmpy** implements *offset compensation* routine that can be activated by setting *oc* parameter to 1. It uses device internal switch clamping ADC input to sample zero offset voltage. This offset is then subtracted from the measured signal. Note though that chopping gives better results in terms of the noise. The offset compensation can't be applied if chopping is used.
+
+Another feature implemented by **dmmpy** for ADS1220 is oversampling. It is activated by setting *os* parameter to the value greater than 1. With *os=N* the **dmmpy** collects N samples and uses their average value as a conversion result. This routine typically reduces noise by the factor of sqrt(N). The oversampling may be combined with chopping or offset compensation.
+
+To speed up readout, especially with oversampling enabled, one can activate ADC turbo mode by setting the *turbo=1* parameter. It will reduce conversion time by the factor of two.
 
 # Working with GUI
 The GUI workflow is built around **dmm-start** script that provides convenient UI for setting **dmm-get** options and launching data acquisition in separate processes. The single instance of **dmm-start** UI can launch any number of data acquisition processes working in parallel, saving data to separate files and showing collected data in their own data plot windows. The following figure illustrates using data acquisition GUI reading data from 3 multimeters simultaneously on Raspberry Pi5.
