@@ -436,16 +436,16 @@ The following multiplexer settings engage internal connections for monitoring pu
 | 14            | AINP and AINN shorted to (AVDD + AVSS) / 2 | used for offset compensation      |
 | 15            | activates temperature sensor reading       | set TS bit in configuration reg#1 |
 
-The following multiplexer settings activates 'chopping' to improve signal quality. The voltage across positive and negative inputs is samples twice. The second sample is taken with inputs polarity swapped. After subtracting the second result from the fist and dividing by two we end up with the result having zero offset compensated and the noise reduced by sqrt(2). The ADS1220 does not do it by itself (in contrast to ADS1263) but **dmmpy** implements this processing for two pairs of inputs.
+The following multiplexer settings activates 'chopping' to improve signal quality. The voltage across positive and negative inputs is samples twice. The second sample is taken with inputs polarity swapped. After subtracting the second result from the fist and dividing by two we end up with the voltage value having zero offset compensated and the noise reduced by sqrt(2). The ADS1220 does not do it by itself (in contrast to ADS1263) but **dmmpy** implements this processing for two pairs of inputs.
 
 | mux parameter | ADC input                                  |
 |---------------|--------------------------------------------|
 | 16            | AIN0, AIN1 chopped                         |
 | 17            | AIN2, AIN3 chopped                         |
 
-There are quite a lot of configuration parameters that can be used with ADS1220. They are listed in the [Setting device-specific parameters](#setting-device-specific-parameters) section. For their meaning please consult the device [datasheet](https://www.ti.com/lit/ds/symlink/ads1220.pdf).
+There are quite a lot of configuration parameters that can be used with ADS1220. They are listed in the [Setting device-specific parameters](#setting-device-specific-parameters) section. To better understand their meaning please consult the device [datasheet](https://www.ti.com/lit/ds/symlink/ads1220.pdf).
 
-In addition to ADS1220 features the **dmmpy** implements *offset compensation* routine that can be activated by setting *oc* parameter to 1. It uses device internal switch clamping ADC input to sample zero offset voltage. This offset is then subtracted from the measured signal. Note though that chopping gives better results in terms of the noise. The offset compensation can't be applied if chopping is used.
+In addition to ADS1220 features the **dmmpy** implements *offset compensation* routine that can be activated by setting *oc* parameter to 1. It uses device internal switch clamping ADC input to sample zero offset voltage. This offset is then subtracted from the measured signal. Note though that chopping gives better results in terms of the noise (but has limited selection of inputs). The offset compensation can't be applied if chopping is used.
 
 Another feature implemented by **dmmpy** for ADS1220 is oversampling. It is activated by setting *os* parameter to the value greater than 1. With *os=N* the **dmmpy** collects N samples and uses their average value as a conversion result. This routine typically reduces noise by the factor of sqrt(N). The oversampling may be combined with chopping or offset compensation.
 
