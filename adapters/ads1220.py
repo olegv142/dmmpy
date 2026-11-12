@@ -69,7 +69,7 @@ class ADS1220Device(SPIDevice):
     # special mux values
     MUX_TS = MUX_RESERVED  = 15 # Activates TS mode
     MUX_0_1_CHOP           = 16 # Switching polarity of IN0 and IN1 to compensate for offset
-    MUX_2_3_CHOP = MUX_MAX = 17 # Switching polarity of IN0 and IN1 to compensate for offset
+    MUX_2_3_CHOP = MUX_MAX = 17 # Switching polarity of IN2 and IN3 to compensate for offset
     # ADC configuration
     SPI_CS = 0 # CS line index
     RDY_IN = 6 # DRDY GPIO pin
