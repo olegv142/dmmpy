@@ -73,17 +73,17 @@ class StatCollector:
         print('valid samples  : %d' % self.total_valid, file=outf)
         if self.total_valid:
             st = self.get_stat()
-            print('min  value     : %f' % self.total_min, file=outf)
-            print('max  value     : %f' % self.total_max, file=outf)
-            print('median average : %f' % self.get_median(), file=outf)
-            print('aver value     : %f' % st.aver, file=outf)
-            print('std deviation  : %f' % st.std_dev, file=outf)
+            print('min  value     : %.3g' % self.total_min, file=outf)
+            print('max  value     : %.3g' % self.total_max, file=outf)
+            print('median average : %.3g' % self.get_median(), file=outf)
+            print('aver value     : %.3g' % st.aver, file=outf)
+            print('std deviation  : %.3g' % st.std_dev, file=outf)
             if st.aver:
                 print('rel. dev. [%%]  : %.2f' % (100 * st.std_dev / abs(st.aver)), file=outf)
             if st.std_dev:
                 print('skewness       : %.2f' % (st.cm3 / (st.std_dev ** 3)), file=outf)
                 print('kurtosis exess : %.2f' % (st.cm4 / (st.std_dev ** 4) - 3), file=outf)
-            print('integral       : %f' % self.integral, file=outf)
+            print('integral       : %.3g' % self.integral, file=outf)
 
 def histogram(Y, N):
     """
