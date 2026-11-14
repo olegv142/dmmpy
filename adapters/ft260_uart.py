@@ -5,8 +5,6 @@ On the CJMCU-260 module the NF0 is pulled up so that only I2C is enabled by defa
 One can fix that by connecting NF0 pin to GND so that both UART and I2C become active.
 """
 
-import os
-import sys
 import time
 import logging
 import struct

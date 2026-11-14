@@ -6,8 +6,6 @@ https://github.com/i2cy/CH347-HIDAPI
 https://github.com/serfreeman1337/go-ch347
 """
 
-import os
-import sys
 import logging
 
 log = logging.getLogger('DEV')

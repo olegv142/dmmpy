@@ -2,8 +2,6 @@
 Bases classes for devices using I2C communication bus
 """
 
-import os
-import sys
 import logging
 from typing import Any
 

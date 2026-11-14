@@ -3,8 +3,6 @@ ADS1220 24-bit ADC adapter
 See https://www.ti.com/lit/ds/symlink/ads1220.pdf
 """
 
-import os
-import sys
 import time
 import struct
 import logging
@@ -387,7 +385,7 @@ class ADS1220Device(SPIDevice):
             if not res:
                 log.error('ADS1220 initialization failed')
                 self.disconnected = True
-                return                
+                return
             if self.SPI_CS < 0:
                 time.sleep(.1) # no ideas why
         except Exception as e:
@@ -418,13 +416,12 @@ class ADS1220Device(SPIDevice):
         return 'V' if self.MUX[channel] != self.MUX_TS else '°C'
 
 if __name__ == '__main__':
-    import time
     logging.basicConfig(level=logging.DEBUG)
     if dev := ADS1220Device.open():
         print(dev)
         with dev:
             dev.init()
-            while True:
+            while dev.is_connected():
                 print(
                     dev.exec_conversion(dev.MUX_AVDD_4),
                     dev.exec_conversion(dev.MUX_SHORT, 4),

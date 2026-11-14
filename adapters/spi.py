@@ -2,8 +2,6 @@
 Bases classes for devices using SPI communication bus
 """
 
-import os
-import sys
 import math
 import logging
 from typing import Any

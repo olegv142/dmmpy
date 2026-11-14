@@ -3,8 +3,6 @@ FNIRSI USB testers communication adapter
 The protocol details are taken from https://github.com/yeckel/OpenFNB58 project
 """
 
-import os
-import sys
 import time
 import logging
 import struct
@@ -221,6 +219,7 @@ class FNBC2(FnirsiUsbDevice):
     MODEL_NAME = 'FNB-C2'
 
 if __name__ == '__main__':
+    import sys
     if '--bt' in sys.argv[1:]:
         devT = FNB48pBt if '--48' in sys.argv[1:] else FNB58Bt
     else:

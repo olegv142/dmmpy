@@ -3,8 +3,6 @@ MCP3421 18 bit ADC adapter
 See https://ww1.microchip.com/downloads/en/devicedoc/22003e.pdf
 """
 
-import os
-import sys
 import logging
 import struct
 import time
@@ -97,6 +95,7 @@ class MCP3421Device(I2CDevice):
         return 'V'
 
 if __name__ == '__main__':
+    import sys
     from .i2c import FT260Adapter, CP2112Adapter
     logging.basicConfig(level=logging.DEBUG) 
     if dev := MCP3421Device.set_i2c_adapter(CP2112Adapter if '--2112' in sys.argv[1:] else FT260Adapter).open():

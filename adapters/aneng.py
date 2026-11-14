@@ -3,8 +3,6 @@ ANENG digital multimeter communication adapter
 Supports AN9002 model also sold as ZOTEK/BSIDE ZT-300AB
 """
 
-import os
-import sys
 import time
 import logging
 

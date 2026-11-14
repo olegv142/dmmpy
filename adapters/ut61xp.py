@@ -9,8 +9,6 @@ The code was reworked with the following goals in mind:
  - support for USB HID and Bluetooth communication channel
 """
 
-import os
-import sys
 import time
 import logging
 
@@ -276,6 +274,7 @@ class UT60BTDevice(UTBtDevice):
         }.get(mode, 1)
 
 if __name__ == '__main__':
+    import sys
     # Open device and print raw readings as well as the corresponding floating point value
     try:
         if len(sys.argv) > 1:

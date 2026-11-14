@@ -3,8 +3,6 @@ Adapters for TI INA226 and INA228 current & voltage monitors
 See https://www.ti.com/lit/gpn/INA226 https://www.ti.com/lit/gpn/INA228
 """
 
-import os
-import sys
 import logging
 import struct
 from typing import Any
@@ -242,6 +240,7 @@ class INA228Device(INADevice):
 
 
 if __name__ == '__main__':
+    import sys
     from .i2c import FT260Adapter, CP2112Adapter
 
     logging.basicConfig(level=logging.DEBUG) 

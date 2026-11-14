@@ -4,9 +4,6 @@ multiplexer (CD74HC4067) driven by GPIO outputs of FT260.
 See https://www.ti.com/lit/ds/symlink/cd74hc4067.pdf
 """
 
-import os
-import sys
-
 from .device import Device
 from .ads1115 import ADS1115Device
 from . import ft260

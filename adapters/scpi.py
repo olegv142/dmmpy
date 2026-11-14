@@ -4,8 +4,6 @@ Currently tested only with OWON multimeters and programmable
 power supplies.
 """
 
-import os
-import sys
 import time
 import logging
 

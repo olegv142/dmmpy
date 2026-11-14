@@ -3,8 +3,6 @@ CH347T UART API
 Only UART1 is available in HID mode
 """
 
-import os
-import sys
 import time
 import logging
 import struct

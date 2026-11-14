@@ -8,8 +8,6 @@ So take care of the two important things:
   - the least significant bits must not be constantly zero
 """
 
-import os
-import sys
 import logging
 import struct
 import time
@@ -145,6 +143,7 @@ class ADS1115Device(I2CDevice):
         return 'V'
 
 if __name__ == '__main__':
+    import sys
     from .i2c import FT260Adapter, CP2112Adapter
     logging.basicConfig(level=logging.DEBUG) 
     if dev := ADS1115Device.set_i2c_adapter(CP2112Adapter if '--2112' in sys.argv[1:] else FT260Adapter).open():
