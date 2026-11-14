@@ -92,23 +92,18 @@ class ADS1115Device(I2CDevice):
             return None
         gcode = {0: 0, 1: 1, 2: 2, 4: 3, 8: 4, 16: 5}.get(gain, 0)
         wait = self.TOUT
-        try:
-            self.adapter.i2c_write(self.I2C_ADDR, [1, (1 << 7) + (mux << 4) + (gcode << 1) + 1, 0])
-            while True:
-                idle_sleep(self.IDLE_DELAY)
-                if (status := self.adapter.i2c_read(self.I2C_ADDR, 2)) is None:
+        self.adapter.i2c_write(self.I2C_ADDR, [1, (1 << 7) + (mux << 4) + (gcode << 1) + 1, 0])
+        while True:
+            idle_sleep(self.IDLE_DELAY)
+            if (status := self.adapter.i2c_read(self.I2C_ADDR, 2)) is None:
+                return None
+            if status[0] & (1 << 7):
+                if not (data := self.adapter.i2c_write_read(self.I2C_ADDR, [0], 2)):
                     return None
-                if status[0] & (1 << 7):
-                    if not (data := self.adapter.i2c_write_read(self.I2C_ADDR, [0], 2)):
-                        return None
-                    return bytes(data)
-                wait -= self.IDLE_DELAY
-                if wait <= 0:
-                    return None
-        except Exception as e:
-            self.disconnected = True
-            log.debug(e, exc_info=True)
-            return None
+                return bytes(data)
+            wait -= self.IDLE_DELAY
+            if wait <= 0:
+                return None
 
     def exec_conversion(self, mux: int, gain: int, idle_sleep=time.sleep) -> float|None:
         """Executes single conversion given MUX and GAIN. Returns measured voltage or None on error."""
@@ -122,12 +117,17 @@ class ADS1115Device(I2CDevice):
     def query_raw(self, idle_sleep=time.sleep) -> Any|None:
         """Query data from device"""
         data = []
-        for c in range(self.channels):
-            val = self.exec_conversion(self.MUX[c], self.GAIN[c], idle_sleep)
-            if val is None:
-                return None
-            data.append(val)
-        return data
+        try:
+            for c in range(self.channels):
+                val = self.exec_conversion(self.MUX[c], self.GAIN[c], idle_sleep)
+                if val is None:
+                    return None
+                data.append(val)
+            return data
+        except Exception as e:
+            self.disconnected = True
+            log.debug(e, exc_info=True)
+            return None
 
     def get_value(self, data, channel: int = 0) -> float:
         """Retrieve floating point value for the given channel"""
@@ -144,9 +144,13 @@ class ADS1115Device(I2CDevice):
 
 if __name__ == '__main__':
     import sys
-    from .i2c import FT260Adapter, CP2112Adapter
+    from .i2c import FT260Adapter, CP2112Adapter, CH347TAdapter
     logging.basicConfig(level=logging.DEBUG) 
-    if dev := ADS1115Device.set_i2c_adapter(CP2112Adapter if '--2112' in sys.argv[1:] else FT260Adapter).open():
+    if dev := ADS1115Device.set_i2c_adapter(
+            CP2112Adapter if '--2112' in sys.argv[1:]
+                else CH347TAdapter if '--347' in sys.argv[1:]
+                else FT260Adapter
+      ).open():
         print(dev)
         assert dev.set_gain(1)
         assert not dev.set_gain(-1)

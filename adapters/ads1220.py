@@ -279,39 +279,31 @@ class ADS1220Device(SPIDevice):
                 (self.VREF << 6) + (self.FIR << 4) + self.IDAC,
                 (self.IMUX[0] << 5) + (self.IMUX[1] << 2)
             ]
-        try:
-            self._cs(True)
-            res = self._write_verify_reg(0, cfg) and self._start()
-            self._cs(False)
-            if not res:
-                log.error('ADS1220 failed to start conversion')
-                self.disconnected = True
-                return None
-            wait = self.TOUT
-            while True:
-                delay = self.conversion_delay()
-                idle_sleep(delay)
-                nrdy = self.adapter.gpio_get_pin(self.RDY_IN)
-                if nrdy is None:
-                    log.error('ADS1220 failed to query conversion status')
-                    self.disconnected = True
-                    return None
-                if not nrdy:
-                    self._cs(True)
-                    data = self._rdata()
-                    self._cs(False)
-                    if data is None:
-                        log.error('ADS1220 failed to query conversion result')
-                        self.disconnected = True
-                    return data
-                wait -= delay
-                if wait <= 0:
-                    log.error('ADS1220 conversion timeout')
-                    return None                
-        except Exception as e:
-            self.disconnected = True
-            log.debug(e, exc_info=True)
+        self._cs(True)
+        res = self._write_verify_reg(0, cfg) and self._start()
+        self._cs(False)
+        if not res:
+            log.error('ADS1220 failed to start conversion')
             return None
+        wait = self.TOUT
+        while True:
+            delay = self.conversion_delay()
+            idle_sleep(delay)
+            nrdy = self.adapter.gpio_get_pin(self.RDY_IN)
+            if nrdy is None:
+                log.error('ADS1220 failed to query conversion status')
+                return None
+            if not nrdy:
+                self._cs(True)
+                data = self._rdata()
+                self._cs(False)
+                if data is None:
+                    log.error('ADS1220 failed to query conversion result')
+                return data
+            wait -= delay
+            if wait <= 0:
+                log.error('ADS1220 conversion timeout')
+                return None                
 
     def exec_conversion_once(self, mux: int, gain: int, idle_sleep=time.sleep) -> float|None:
         """Executes single conversion given MUX and gain value. Returns floating point value or None on error."""
@@ -387,7 +379,9 @@ class ADS1220Device(SPIDevice):
                 self.disconnected = True
                 return
             if self.SPI_CS < 0:
-                time.sleep(.1) # no ideas why
+                # Looks like reset leave SPI in not clear state.
+                # It resets itself after timeout.
+                time.sleep(.1)
         except Exception as e:
             self.disconnected = True
             log.debug(e, exc_info=True)
@@ -395,12 +389,17 @@ class ADS1220Device(SPIDevice):
     def query_raw(self, idle_sleep=time.sleep) -> Any|None:
         """Query data from device"""
         data = []
-        for c in range(self.channels):
-            val = self.exec_conversion(self.MUX[c], self.GAIN[c], idle_sleep)
-            if val is None:
-                return None
-            data.append(val)
-        return data
+        try:
+            for c in range(self.channels):
+                val = self.exec_conversion(self.MUX[c], self.GAIN[c], idle_sleep)
+                if val is None:
+                    return None
+                data.append(val)
+            return data
+        except Exception as e:
+            self.disconnected = True
+            log.debug(e, exc_info=True)
+            return None
 
     def get_value(self, data, channel: int = 0) -> float:
         """Retrieve floating point value for the given channel"""
