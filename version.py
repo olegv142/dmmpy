@@ -4,7 +4,7 @@ Product version
 
 major = 0
 minor = 9
-patch = 8
+patch = 9
 
 version_str = '%u.%u.%u' % (major, minor, patch)
 
