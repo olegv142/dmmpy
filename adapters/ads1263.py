@@ -163,7 +163,7 @@ class ADS1263Device(SPIDevice):
         ]
 
     def _mk_adc1_aux_cfg(self) -> list[int]:
-        """Returns IDACMUX, IDACMAG, REFMUX, TDACP, TDACN registers (addr 13..15)"""
+        """Returns IDACMUX, IDACMAG, REFMUX registers (addr 13..15)"""
         return [
             (self.I2MUX << 4) + self.I1MUX,
             (self.I2DAC << 4) + self.I1DAC,
