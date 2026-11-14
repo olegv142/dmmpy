@@ -189,7 +189,7 @@ class ADS1220Device(SPIDevice):
                 return self.set_mux(int(val), 0)
             if lkey == 'amux':
                 return self.set_mux(int(val), 1)
-            if lkey == 'cs':
+            if lkey == 'spi_cs':
                 return self.set_cs_pin(int(val))
             if lkey == 'rdy':
                 return self.set_rdy_pin(int(val))
