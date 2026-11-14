@@ -19,6 +19,7 @@ from adapters.ina import INA226Device, INA228Device
 from adapters.mcp3421 import MCP3421Device
 from adapters.ads1115 import ADS1115Device
 from adapters.ads1220 import ADS1220Device
+from adapters.ads1263 import ADS1263Device
 from adapters.i2c import I2CBusScanner
 from data_stat import StatCollector, histogram
 from version import version_str
@@ -39,7 +40,8 @@ _supported_devices = (
     INA228Device,
     MCP3421Device,
     ADS1115Device,
-    ADS1220Device
+    ADS1220Device,
+    ADS1263Device
 )
 
 class Plotter:
