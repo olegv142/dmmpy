@@ -80,7 +80,11 @@ The CH347T is the only USB to SPI adapter supported by **dmmpy**. Typically you 
 So there are much more signals than just SDA/SCL + power used by I2C devices. Typically SPI ADC are also more complicated in setting up correctly. Reading device datasheet first is always strongly recommended when dealing with SPI ADC devices.
 
 #### ADS1220 24-bit ADC
-This is the versatile and quite sensitive ADC with 4 analog inputs similar to ADS1115 but with more resolution and features. Its relatively simple to use provided that you can wire it to the CH347T adapter. This device is also sold by Chinese sellers at a surprisingly low price.Of course, it needs to be thoroughly tested. The **dmmpy** program provides a very convenient test platform where you can check almost all of the chip's functions.
+This is the versatile and quite sensitive ADC with 4 analog inputs similar to ADS1115 but with more resolution and features. Its relatively simple to use provided that you can wire it to the CH347T adapter. This device is also sold by Chinese sellers at a surprisingly low price.Of course, it needs to be thoroughly tested. The **dmmpy** program provides a very convenient test platform where you can check almost all of the chip's functions. See [Working with ADS1220 ADC boards](#working-with-ads1220-adc-boards) for more information.
+
+#### ADS1263 32-bit ADC
+This is the most versatile ADC among those supported by **dmmpy**. Is has quite profound list of features and very impressive noise performance. In fact it combines two independent ADC with 32 and 24 bits resolution having access to 10 analog inputs, internal temperature sensor and test DAC for self diagnostic. It even able to use some of its analog inputs as GPIO pins.
+
 
 ## Installation
 The installation basically involves three steps - getting the source, installing python and installing required packages. Windows users have convenient alternative of using [portable binaries](#using-portable-binaries).
@@ -284,7 +288,7 @@ The configuration tricks shown above work just because the auto-detected device 
 Working with Bluetooth adapter conceptually is not different from using USB. Just add *-B/--bt* option right after *dmm-get* to force script to use BT adapter. Similar to USB use case the script is able to auto detect BT adapter provided that its powered on and no other adapters are in the accessible range. By means of using the *--cfg-save* option one can save the address of the adapter discovered (which plays the role of USB device path) for the subsequent reuse. One can specify BT address in the command line explicitly via *--path/--addr* option. Opening BT device by its address is significantly faster and more reliable than autodetecting it.
 
 ## Setting device-specific parameters
-Some devices need special settings not applicable to other device. There is a special command line option to setup such parameters *--param*. It should be followed by KEY=VAL pair. To set multiple parameters this option may be used multiple times like *--param KEY1=VAL1 --param KEY2=VAL2 ..*. To setup parameters in **dmm-start** [data acquisition launcher GUI](#data-acquisition-launcher) one should use *device parameters* field separating *key=value* pairs by comma. The following table lists all possible parameters and notes where they are applicable. Note that the parameter names are case-insensitive.
+Some devices need special settings not applicable to other device. There is a special command line option to setup such parameters *--param*. It should be followed by KEY=VAL pair. To set multiple parameters this option may be used multiple times like *--param KEY1=VAL1 --param KEY2=VAL2 ..*. To setup parameters in **dmm-start** [data acquisition launcher GUI](#data-acquisition-launcher) one should use *device parameters* field separating *key=value* pairs by comma. The following table lists possible parameters and notes where they are applicable. The parameter names are case-insensitive. Note that some ADS1263 parameters are not listed.
 
 | Parameter name | Meaning                                                            | Default          | Applicable to    |
 |----------------|--------------------------------------------------------------------|------------------|------------------|
@@ -298,21 +302,28 @@ Some devices need special settings not applicable to other device. There is a sp
 | range          | INA228 shunt voltage range {0,1}                                   | 0                | INA228           |
 | tempco         | INA228 shunt temperature coefficient                               | 0                | INA228           |
 | amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}                 | cv               | INA228           |
-| gain           | ADC amplifier gain                                                 | 0 (ADS1115) or 1 | MCP3421, ADS1115, ADS1220 |
+| gain           | ADC amplifier gain                                                 | 0 (ADS1115) or 1 | MCP3421, ADS1115, ADS1220, ADS1263 |
 | again          | Alternative channel ADC amplifier gain                             | 0                | ADS1115, ADS1220          |
 | mux            | ADC input multiplexer configuration                                | device specific  | ADS1115, ADS1220          |
 | amux           | Alternative channel ADC input multiplexer configuration            | device specific  | ADS1115, ADS1220          |
-| vref           | Selects the source of ADC reference voltage                        | 0 (internal)     | ADS1220          |
-| fir            | Selects ADC filtering mode                                         | 2 (50Hz reject)  | ADS1220          |
-| idac           | Selects the ADC excitation current source mode                     | 0 (off)          | ADS1220          |
-| i1mux          | Selects the first excitation current source connection             | 0 (off)          | ADS1220          |
-| i2mux          | Selects the second excitation current source connection            | 0 (off)          | ADS1220          |
+| vref           | Selects the source of ADC reference voltage                        | internal         | ADS1220          |
+| fir            | Selects ADC filtering mode                                         | 50Hz reject      | ADS1220          |
 | turbo          | Enables ADC turbo mode                                             | 0                | ADS1220          |
 | bcs            | Enables burn-out current sources                                   | 0                | ADS1220          |
-| cs             | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220          |
 | rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6                | ADS1220          |
 | oc             | Enables offset compensation                                        | 0                | ADS1220          |
 | os             | Enables oversampling                                               | 0                | ADS1220          |
+| i1mux          | Selects the first excitation current source connection             | off              | ADS1220, ADS1263 |
+| i2mux          | Selects the second excitation current source connection            | off              | ADS1220, ADS1263 |
+| idac           | Selects the ADC excitation current source mode                     | off              | ADS1220          |
+| i1dac          | Selects the first excitation current source magnitude              | off              | ADS1263          |
+| i2dac          | Selects the second excitation current source magnitude             | off              | ADS1263          |
+| spi_cs         | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220, ADS1263 |
+| muxp           | Selects positive ADC input connection                              | 0                | ADS1263          |
+| muxn           | Selects negative ADC input connection                              | 1                | ADS1263          |
+| muxp2          | Selects positive ADC2 input connection                             | temp. sensor     | ADS1263          |
+| muxn2          | Selects negative ADC2 input connection                             | temp. sensor     | ADS1263          |
+
 
 ## Working with other supported devices
 ### Specifying device model
@@ -408,7 +419,7 @@ The default value of the *gain* is 0 so that ADS1115 will use its full scale ran
 In case you are going to read alternative data channel you may configure its multiplexing and gain by specifying *amux* and *again* parameters. So you will be able to sample and plot two voltage sources connected to different ADS1115 inputs. The default value of *again* is 0 (full scale range of 6.144V). The default *amux* is 7 so you will sample AIN3 input relative to the ground.
 
 ### Working with ADS1220 ADC boards
-To be able to receive data from ADS1220 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter. Typical ADS1220 board has two power inputs (digital and analog) so that you have to connect both of them. The CS signal should be connected to CS0 pin of the adapter. The DRDY signal should be connected to IO6 pin of the adapter. Both pins can be changed by setting *cs* and *rdy* parameters if necessary. The *gain* and *again* parameters specify the ADC internal amplifier gain. They should be selected from the set {1, 2, 4, 8, 16, 32, 64, 128}. The gain 1 is the default. Note that using gains 8 and above will engage internal amplifier. This will increase noise slightly and reduce possible input voltage range. At high gain settings the input voltage at both positive and negative inputs should be close to the half of the power voltage. In particular, you should never use a single ended input at gain 8 and above.
+To be able to receive data from ADS1220 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter. Typical ADS1220 board has two power inputs (digital and analog) so that you have to connect both of them. The CS signal should be connected to CS0 pin of the adapter. The DRDY signal should be connected to IO6 pin of the adapter. Both pins can be changed by setting *spi_cs* and *rdy* parameters if necessary. The *gain* and *again* parameters specify the ADC internal amplifier gain. They should be selected from the set {1, 2, 4, 8, 16, 32, 64, 128}. The gain 1 is the default. Note that using gains 8 and above will engage internal amplifier. This will increase noise slightly and reduce possible input voltage range. At high gain settings the input voltage at both positive and negative inputs should be close to the half of the power voltage. In particular, you should never use a single ended input at gain 8 and above.
 
 The *mux* and *amux* parameters determine ADC input multiplexer configuration for the main and alternative readout channels. Their possible values are listed in the following table
 
@@ -450,6 +461,19 @@ In addition to ADS1220 features the **dmmpy** implements *offset compensation* r
 Another feature implemented by **dmmpy** for ADS1220 is oversampling. It is activated by setting *os* parameter to the value greater than 1. With *os=N* the **dmmpy** collects N samples and uses their average value as a conversion result. This routine typically reduces noise by the factor of sqrt(N). The oversampling may be combined with chopping or offset compensation.
 
 To speed up readout, especially with oversampling enabled, one can activate ADC turbo mode by setting the *turbo=1* parameter. It will reduce conversion time by the factor of two.
+
+### Working with ADS1263 ADC boards
+To be able to communicate with ADS1263 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter except for DRDY signal which is not used by **dmmpy**. The ADS1263 has two power inputs (digital and analog) with different so that you have to connect both of them. The analog power voltage should be either 5V or ±2.5V. The CS signal should be connected to CS0 pin of the adapter. This pin can be changed by setting *spi_cs* parameter if necessary.
+
+The ADS1263 has two independent ADC so that the **dmmpy** uses the main 32-bit ADC1 as the main readout channel and the auxiliary 24-bit ADC2 as alternative readout channel. The ADC2 always runs continuously while the ADC1 may be programmed to run continuously (the default) or in single shot mode. In the latter case *dmmpy* will restart it after every conversion. The ADC1 samples AIN0 as positive input and AIN1 as negative input by default. One can change this assignment by setting *muxp* and *muxn* parameters. The ADC2 is connected to the internal temperature sensor by default. One can change this by setting *muxp2* and *muxn2* parameters.
+
+We are not pretending to list all possible parameters here since their list is quite long. Please consult the device [datasheet](https://www.ti.com/lit/gpn/ADS1263) and [source code](adapters/ads1263.py) for more details. One can also consider the ADC1263 [self test code](adapters/ads1263_test.py) as an example of using ADS1263 in your custom scripts.
+
+To evaluate ADC1263 noise performance one can access it in **dmm-start** acquisition launcher with the following *device parameters*:
+```
+muxp=14,muxn=14,chop=1,gain=32,filter=3
+```
+This will start sampling with input shorted and internal chopper activated. On my pretty trivial setup it gives 10nV RMS noise, which is an order of magnitude better than what can be achieved with the ADS1220 ADC in similar test.
 
 # Working with GUI
 The GUI workflow is built around **dmm-start** script that provides convenient UI for setting **dmm-get** options and launching data acquisition in separate processes. The single instance of **dmm-start** UI can launch any number of data acquisition processes working in parallel, saving data to separate files and showing collected data in their own data plot windows. The following figure illustrates using data acquisition GUI reading data from 3 multimeters simultaneously on Raspberry Pi5.
