@@ -174,7 +174,7 @@ class ADS1220Device(SPIDevice):
             return True
         return False
 
-    def set_param(self, key: str, val: str|float) -> bool:
+    def set_param(self, key: str, val: str|int|float) -> bool:
         """
         Set device specific parameter.
         Returns True if key / val pair is recognized, False otherwise.

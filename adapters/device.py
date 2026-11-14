@@ -39,7 +39,7 @@ class Device:
     def __init__(self, *args):
         super().__init__(*args)
 
-    def set_param(self, key: str, val: str|float) -> bool:
+    def set_param(self, key: str, val: str|int|float) -> bool:
         """
         Set device specific parameter.
         Returns True if key / val pair is recognized, False otherwise.

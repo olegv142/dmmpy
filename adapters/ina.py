@@ -25,7 +25,7 @@ class INADevice(I2CDevice):
         """Set shunt resistance in Ohms"""
         self.SHUNT_RES = shunt_res
 
-    def set_param(self, key: str, val: str|float) -> bool:
+    def set_param(self, key: str, val: str|int|float) -> bool:
         """
         Set device specific parameter.
         Returns True if key / val pair is recognized, False otherwise.
@@ -157,7 +157,7 @@ class INA228Device(INADevice):
             return True
         return False
 
-    def set_param(self, key: str, val: str|float) -> bool:
+    def set_param(self, key: str, val: str|int|float) -> bool:
         """
         Set device specific parameter.
         Returns True if key / val pair is recognized, False otherwise.

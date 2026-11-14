@@ -170,7 +170,7 @@ class I2CDevice(I2CDeviceCore):
         """Set target device address on I2C bus"""
         self.I2C_ADDR = addr
 
-    def set_param(self, key: str, val: str|float) -> bool:
+    def set_param(self, key: str, val: str|int|float) -> bool:
         """
         Set device specific parameter.
         Returns True if key / val pair is recognized, False otherwise.
