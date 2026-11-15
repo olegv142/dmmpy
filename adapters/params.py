@@ -8,8 +8,13 @@ from dataclasses import dataclass
 
 log = logging.getLogger('DEV')
 
+class ParamTag:
+    def cast(self, val: str|int|float):
+        raise NotImplementedError()
+
 @dataclass
-class IntTag:
+class IParam(ParamTag):
+    """Integer parameter descriptor"""
     name : str # capitalized name
     vmin : int # min value
     vmax : int # max value

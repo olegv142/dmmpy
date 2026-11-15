@@ -8,7 +8,7 @@ import struct
 import logging
 
 from .spi import SPIDevice
-from .params import IntTag, init_defaults, parse
+from .params import IParam, init_defaults, parse
 
 log = logging.getLogger('DEV')
 
@@ -42,7 +42,7 @@ class ADS1263Device(SPIDevice):
     MUX_AIN7   = 7  # AIN7
     MUX_AIN8   = 8  # AIN8
     MUX_AIN9   = 9  # AIN9
-    MUX_AIN10  = 10 # AINCOM
+    MUX_AINCOM = 10 # AINCOM
     MUX_TS     = 11 # Temperature sensor monitor
     MUX_AVDD_4 = 12 # Analog power supply monitor (AVDD/4)
     MUX_DVDD_4 = 13 # Digital power supply monitor (DVDD/4)
@@ -93,6 +93,14 @@ class ADS1263Device(SPIDevice):
     TDAC_N10  = 0x17  # AVDD / 2 - AVDD / 10
     TDAC_N5   = 0x18  # AVDD / 2 - AVDD / 5
     TDAC_N2_5 = 0x19  # AVDD / 2 - AVDD / 2.5
+    # Sensor bias settings
+    SB_Off = 0 # No sensor bias current or resistor (default)
+    SB_0_5 = 1 # 0.5-µA sensor bias current
+    SB_2   = 2 # 2-µA sensor bias current
+    SB_10  = 3 # 10-µA sensor bias current
+    SB_50  = 4 # 50-µA sensor bias current
+    SB_200 = 5 # 200-µA sensor bias current
+    SB_10M = 6 # 10-MΩ resistor
 
     # Status bits
     STA_ADC2   = 1 << 7 # ADC2 data new since the last ADC2 read operation
@@ -109,37 +117,37 @@ class ADS1263Device(SPIDevice):
         # or by specifying a key=value pair that is ultimately passed to the self.set_param(key, val) function. Note that
         # in the second scenario the gain values will be translated to the corresponding device specific codes like 8 -> 3 for gain=8.
         # For example one can use the following parameters to observe the noise floor o the ADC1 (~10nV): muxp=14,muxn=14,chop=1,gain=32,filter=3
-        IntTag('SPI_CS', 0, 1),     # CS line index
-        IntTag('VBIAS',  0, 1),     # if set to 1 enables the internal level shift voltage to the AINCOM <- (VAVDD + VAVSS)/2
-        IntTag('INTREF', 0, 1, 1),  # internal reference (2.5V) enabled
-        IntTag('REFREV', 0, 1),     # if set to 1 reverses the ADC1 reference multiplexer output polarity
-        IntTag('RUNMODE', 0, 1),    # 0 - continuous conversion (default), 1 - one shot conversion
-        IntTag('CHOP',   0, 3),     # chop mode
-        IntTag('DELAY',  0, 11),    # additional conversion delay (see datasheet)
-        IntTag('FILTER', 0, 4, FILTER_FIR), # filter mode (FIR)
-        IntTag('SBADC',  0, 1),     # sensor bias connected to ADC1 mux out (default)
-        IntTag('SBPOL',  0, 1),     # sensor bias pull-up mode (AINP pulled high, AINN pulled low) (default)
-        IntTag('SBMAG',  0, 6),     # no sensor bias current or resistor (default)
-        IntTag('BYPASS1', 0, 1, 1), # PGA bypass for gain == 1
-        IntTag('GAIN', 0, 5, mapping = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5}), # PGA gain
-        IntTag('DR', 0, 15),        # data rate (0: 2.5, 1: 5, 2: 10, 3: 16.6, 4: 20, 5: 50, 6: 60, 7: 100, 8: 400, 9: 1200, 10: 2400, 11: 4800, 12: 7200, 13: 14400, 14: 19200, 15: 38400)
-        IntTag('MUXP', 0, 15, 0),   # positive input connection (AIN0)
-        IntTag('MUXN', 0, 15, 1),   # negative input connection (AIN1)
-        IntTag('I1MUX', 0, 11, IMUX_Off), # IDAC1 connection
-        IntTag('I2MUX', 0, 11, IMUX_Off), # IDAC2 connection
-        IntTag('I1DAC', 0, 10),     # IDAC1 magnitude
-        IntTag('I2DAC', 0, 10),     # IDAC2 magnitude
-        IntTag('RMUXP', 0, 4),      # REFP is connected to internal 2.5 V reference
-        IntTag('RMUXN', 0, 4),      # REFN is connected to internal 2.5 V reference
-        IntTag('TDAC_OUTP', 0, 1),  # test DAC positive output not connected (AIN6 if set to 1)
-        IntTag('TDAC_OUTN', 0, 1),  # test DAC negative output not connected (AIN7 if set to 1)
-        IntTag('TDAC_MAGP', 0, 25), # test DAC positive output set to 2.5V
-        IntTag('TDAC_MAGN', 0, 25), # test DAC negative output set to 2.5V
-        IntTag('DR2', 0, 3),        # ADC2 data rate (0: 10, 1: 100, 2: 400, 3: 800)
-        IntTag('REF2', 0, 4),       # ADC2 uses internal reference (2.5V)
-        IntTag('GAIN2', 0, 7, mapping = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7}), # ADC2 gain
-        IntTag('MUXP2', 0, 15, MUX_TS), # ADC2 positive input connection (temperature sensor)
-        IntTag('MUXN2', 0, 15, MUX_TS), # ADC2 negative input connection (temperature sensor)
+        IParam('SPI_CS', 0, 1),     # CS line index
+        IParam('VBIAS',  0, 1),     # if set to 1 enables the internal level shift voltage to the AINCOM <- (VAVDD + VAVSS)/2
+        IParam('INTREF', 0, 1, 1),  # internal reference (2.5V) enabled
+        IParam('REFREV', 0, 1),     # if set to 1 reverses the ADC1 reference multiplexer output polarity
+        IParam('RUNMODE', 0, 1),    # 0 - continuous conversion (default), 1 - one shot conversion
+        IParam('CHOP',   0, 3),     # chop mode
+        IParam('DELAY',  0, 11),    # additional conversion delay (see datasheet)
+        IParam('FILTER', 0, 4, FILTER_FIR), # filter mode (FIR)
+        IParam('SBADC',  0, 1),     # sensor bias connected to ADC1 mux out (default)
+        IParam('SBPOL',  0, 1),     # sensor bias pull-up mode (AINP pulled high, AINN pulled low) (default)
+        IParam('SBMAG',  0, 6),     # no sensor bias current or resistor (default)
+        IParam('BYPASS1', 0, 1, 1), # PGA bypass for gain == 1
+        IParam('GAIN', 0, 5, mapping = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5}), # PGA gain
+        IParam('DR', 0, 15),        # data rate (0: 2.5, 1: 5, 2: 10, 3: 16.6, 4: 20, 5: 50, 6: 60, 7: 100, 8: 400, 9: 1200, 10: 2400, 11: 4800, 12: 7200, 13: 14400, 14: 19200, 15: 38400)
+        IParam('MUXP', 0, 15, 0),   # positive input connection (AIN0)
+        IParam('MUXN', 0, 15, 1),   # negative input connection (AIN1)
+        IParam('I1MUX', 0, 11, IMUX_Off), # IDAC1 connection
+        IParam('I2MUX', 0, 11, IMUX_Off), # IDAC2 connection
+        IParam('I1DAC', 0, 10),     # IDAC1 magnitude
+        IParam('I2DAC', 0, 10),     # IDAC2 magnitude
+        IParam('RMUXP', 0, 4),      # REFP is connected to internal 2.5 V reference
+        IParam('RMUXN', 0, 4),      # REFN is connected to internal 2.5 V reference
+        IParam('TDAC_OUTP', 0, 1),  # test DAC positive output not connected (AIN6 if set to 1)
+        IParam('TDAC_OUTN', 0, 1),  # test DAC negative output not connected (AIN7 if set to 1)
+        IParam('TDAC_MAGP', 0, 25), # test DAC positive output set to 2.5V
+        IParam('TDAC_MAGN', 0, 25), # test DAC negative output set to 2.5V
+        IParam('DR2', 0, 3),        # ADC2 data rate (0: 10, 1: 100, 2: 400, 3: 800)
+        IParam('REF2', 0, 4),       # ADC2 uses internal reference (2.5V)
+        IParam('GAIN2', 0, 7, mapping = {1: 0, 2: 1, 4: 2, 8: 3, 16: 4, 32: 5, 64: 6, 128: 7}), # ADC2 gain
+        IParam('MUXP2', 0, 15, MUX_TS), # ADC2 positive input connection (temperature sensor)
+        IParam('MUXN2', 0, 15, MUX_TS), # ADC2 negative input connection (temperature sensor)
     ]
 
     def __init__(self, *args):
@@ -204,13 +212,16 @@ class ADS1263Device(SPIDevice):
         # it will be impossible to communicate with device without CS signal that resets it.
         self.adapter.spi_set_cs(self.SPI_CS, active)
 
-    def _wreg(self, addr: int, data: list[int]) -> bool:
+    def _wreg(self, addr: int, data: list[int], validate: bool = True) -> bool:
         """Write registers starting from the given address and validate by reading them back"""
         n = len(data)
-        resp = self._tx_cmd([0x40 + addr, n - 1] + data + [0x20 + addr, n - 1] + [0] * n)
+        cmds = [0x40 + addr, n - 1] + data
+        if validate: # read back registers
+            cmds += [0x20 + addr, n - 1] + [0] * n
+        resp = self._tx_cmd(cmds)
         if resp is None:
             return False
-        if resp[-n:] != data:
+        if validate and resp[-n:] != data:
             log.error('ADS1263 failed to update %d reg(s) at addr %d', n, addr)
             return False
         return True
@@ -220,10 +231,10 @@ class ADS1263Device(SPIDevice):
         resp = self._tx_cmd([0x20 + addr, count - 1] + [0] * count)
         return resp[2:] if resp is not None else None
 
-    def wreg(self, addr: int, data: list[int]) -> bool:
+    def wreg(self, addr: int, data: list[int], validate: bool = True) -> bool:
         """Write registers starting from the given address"""
         self._cs(True)
-        res = self._wreg(addr, data)
+        res = self._wreg(addr, data, validate)
         self._cs(False)
         return res
 
@@ -334,14 +345,16 @@ class ADS1263Device(SPIDevice):
             return []
         return data
 
-    def _adc_start(self, adci: int) -> bool:
-        """Start ADC given its index"""
+    def _adc_restart(self, adci: int) -> bool:
+        """Start/restart ADC given its index"""
         assert 0 <= adci <= 1
-        return self._tx_cmd([(0x8, 0xc)[adci]]) is not None
+        # send stop + start commands
+        return self._tx_cmd(([0xa, 0x8], [0xe, 0xc])[adci]) is not None
 
-    def adc_start(self, adci: int) -> bool:
+    def adc_restart(self, adci: int = 0) -> bool:
+        """Start/restart ADC given its index"""
         self._cs(True)
-        res = self._adc_start(adci)
+        res = self._adc_restart(adci)
         self._cs(False)
         return res
 
@@ -355,7 +368,7 @@ class ADS1263Device(SPIDevice):
         self._cs(True)
         data = self._query_data(adci)
         if data and adci == 0 and not self._is_adc1_run_continuous():
-            self._adc_start(0)
+            self._adc_restart(0)
         self._cs(False)
         return data
 
