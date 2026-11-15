@@ -467,7 +467,7 @@ To be able to communicate with ADS1263 ADC board you need to connect it to CH347
 
 The ADS1263 has two independent ADC, so that the **dmmpy** uses the main 32-bit ADC1 as the main readout channel and the auxiliary 24-bit ADC2 as alternative readout channel. The ADC2 always runs continuously while the ADC1 may be programmed to run continuously (the default) or in single shot mode. In the latter case *dmmpy* will restart it after every conversion. The ADC1 samples AIN0 as positive input and AIN1 as negative input by default. One can change this assignment by setting *muxp* and *muxn* parameters. The ADC2 is connected to the internal temperature sensor by default. One can change this by setting *muxp2* and *muxn2* parameters.
 
-We are not pretending to list all possible parameters here since their list is quite long. Please consult the device [datasheet](https://www.ti.com/lit/gpn/ADS1263) and [source code](adapters/ads1263.py) for more details. One can also consider the ADC1263 [self test code](adapters/ads1263_test.py) as an example of using ADS1263 in your custom scripts.
+We are not pretending to list all possible parameters here since their list is quite long. Please consult the device [datasheet](https://www.ti.com/lit/gpn/ADS1263) and [source code](adapters/ads1263.py) for more details. One can also consider the ADC1263 [self test code](adapters/ads1263_test.py) as an example of using ADS1263 in your custom scripts. See also [ads1263_gpio.py](adapters/ads1263_gpio.py) as an example of using GPIO with ADC1263.
 
 To evaluate ADC1263 noise performance one can access it in **dmm-start** acquisition launcher with the following *device parameters*:
 ```
