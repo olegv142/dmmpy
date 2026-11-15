@@ -1,5 +1,10 @@
 """
-ADS1263 GPIO functions
+ADS1263 GPIO functions.
+
+Note that GPIO levels are related to analog power supply.
+AVDD is logic 1, AVSS is logic 0. The middle point is the threshold.
+So don't expect them to match digital domain levels. While using bipolar
+analog power supply the GPIO levels also become bipolar.
 """
 
 from .ads1263 import ADS1263Device
