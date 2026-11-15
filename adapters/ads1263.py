@@ -117,6 +117,9 @@ class ADS1263Device(SPIDevice):
         # or by specifying a key=value pair that is ultimately passed to the self.set_param(key, val) function. Note that
         # in the second scenario the gain values will be translated to the corresponding device specific codes like 8 -> 3 for gain=8.
         # For example one can use the following parameters to observe the noise floor o the ADC1 (~10nV): muxp=14,muxn=14,chop=1,gain=32,filter=3
+        # In the following the first IParam argument is the parameter name, the second and the third are minimum and maximum values. The optional forth
+        # argument is the default value (0 if not specified). The mapping may be optionally specified to translate user provided parameter (gain for ex)
+        # to the value used to encode it at the device hardware level.
         IParam('SPI_CS', 0, 1),     # CS line index
         IParam('VBIAS',  0, 1),     # if set to 1 enables the internal level shift voltage to the AINCOM <- (VAVDD + VAVSS)/2
         IParam('INTREF', 0, 1, 1),  # internal reference (2.5V) enabled
