@@ -124,7 +124,7 @@ class ADS1263Device(SPIDevice):
         IParam('RUNMODE', 0, 1),    # 0 - continuous conversion (default), 1 - one shot conversion
         IParam('CHOP',   0, 3),     # chop mode
         IParam('DELAY',  0, 11),    # additional conversion delay (see datasheet)
-        IParam('FILTER', 0, 4, FILTER_FIR), # filter mode (FIR)
+        IParam('FILTER', 0, 4, FILTER_FIR), # filter mode
         IParam('SBADC',  0, 1),     # sensor bias connected to ADC1 mux out (default)
         IParam('SBPOL',  0, 1),     # sensor bias pull-up mode (AINP pulled high, AINN pulled low) (default)
         IParam('SBMAG',  0, 6),     # no sensor bias current or resistor (default)
@@ -152,6 +152,7 @@ class ADS1263Device(SPIDevice):
 
     def __init__(self, *args):
         super().__init__(*args)
+        self.device_id = None
         self.adc1_mode_cfg = None
         self.adc1_mux_cfg = None
         self.adc2_cfg = None
@@ -419,7 +420,14 @@ class ADS1263Device(SPIDevice):
         super().init(nchannels)
         try:
             self._cs(True)
-            res = self._reset() \
+            if self.device_id is None:
+                dev_id = self._rreg(0)
+                if dev_id is not None:
+                    self.device_id = dev_id[0]
+                    dev_name = {0: 'ADS1262', 1: 'ADS1263'}.get(self.device_id >> 5, 'unknown device')
+                    log.debug('connected to %s, rev.%d' % (dev_name, self.device_id & 0x1f))
+            res = self.device_id is not None \
+                and self._reset() \
                 and self._wreg(1, self._mk_power_cfg()) \
                 and self._wreg(16, self._mk_tdac_cfg()) \
                 and self._adc1_init()
