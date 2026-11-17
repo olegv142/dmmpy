@@ -92,7 +92,8 @@ class ADS1115Device(I2CDevice):
             return None
         gcode = {0: 0, 1: 1, 2: 2, 4: 3, 8: 4, 16: 5}.get(gain, 0)
         wait = self.TOUT
-        self.adapter.i2c_write(self.I2C_ADDR, [1, (1 << 7) + (mux << 4) + (gcode << 1) + 1, 0])
+        if not self.adapter.i2c_write(self.I2C_ADDR, [1, (1 << 7) + (mux << 4) + (gcode << 1) + 1, 0]):
+            return None
         while True:
             idle_sleep(self.IDLE_DELAY)
             if (status := self.adapter.i2c_read(self.I2C_ADDR, 2)) is None:

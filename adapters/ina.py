@@ -61,7 +61,8 @@ class INA226Device(INADevice):
         super().init(nchannels)
         try:
             # Set 4 msec conversion time and 4 samples averaging
-            self.adapter.i2c_write(self.I2C_ADDR, [0, 0x43, 0xB7])
+            if not self.adapter.i2c_write(self.I2C_ADDR, [0, 0x43, 0xB7]):
+                self.disconnected = True
         except Exception as e:
             self.disconnected = True
             log.debug(e, exc_info=True)
@@ -122,9 +123,10 @@ class INA228Device(INADevice):
         """
         super().init(nchannels)
         try:
-            self.adapter.i2c_write(self.I2C_ADDR, [0, 0, 0 if not self.RANGE else 0x10])
             # Set 4 msec conversion time and 4 samples averaging
-            self.adapter.i2c_write(self.I2C_ADDR, [1, 0xFF, 0xF9])
+            if not self.adapter.i2c_write(self.I2C_ADDR, [0, 0, 0 if not self.RANGE else 0x10]) or \
+               not self.adapter.i2c_write(self.I2C_ADDR, [1, 0xFF, 0xF9]):
+                self.disconnected = True
         except Exception as e:
             self.disconnected = True
             log.debug(e, exc_info=True)

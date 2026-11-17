@@ -54,7 +54,8 @@ class MCP3421Device(I2CDevice):
         rate = 3 << 2 # 3.75 SPS (18 bits)
         mode = 1 << 4 # continuous
         try:
-            self.adapter.i2c_write(self.I2C_ADDR, [gain + rate + mode])
+            if not self.adapter.i2c_write(self.I2C_ADDR, [gain + rate + mode]):
+                self.disconnected = True
         except Exception as e:
             self.disconnected = True
             log.debug(e, exc_info=True)
