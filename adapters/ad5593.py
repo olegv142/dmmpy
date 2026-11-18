@@ -212,7 +212,10 @@ if __name__ == '__main__':
                 assert dev.write_gpio_pins(OUT_GPIO)
                 data = dev.query_raw()
                 print(data)
-                print(dev.get_value(data, 0), dev.get_mode(data, 0), dev.get_value(data, 1), dev.get_mode(data, 1))
+                print(
+                        dev.get_value(data, 0),             dev.get_mode(data, 0),
+                        dev.get_value(data, dev.TEMP_CHAN), dev.get_mode(data, dev.TEMP_CHAN)
+                    )
                 assert data[OUT_PIN] is None
                 assert dev.read_gpio_pins() == OUT_GPIO & OUT_PINS
                 time.sleep(.5)
