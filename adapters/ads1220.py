@@ -99,6 +99,7 @@ class ADS1220Device(SPIDevice):
         """Set input MUX configuration for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
         if 0 <= mux <= self.MUX_MAX:
+            self.MUX = self.MUX.copy()
             self.MUX[chan] = mux
             return True
         return False
@@ -254,7 +255,11 @@ class ADS1220Device(SPIDevice):
             )
         if res is None:
             return False
-        return res[2+nregs:] == data
+        if res[2+nregs:] != data:
+            log.debug('ADS1220 failed to update %d reg(s) at addr %d: write %s, read %s',
+                nregs, reg, data, res[2+nregs:])
+            return False
+        return True
 
     def _rdata(self) -> list[int]|None:
         """Read conversion data"""
