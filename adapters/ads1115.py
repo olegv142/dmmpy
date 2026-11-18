@@ -54,6 +54,7 @@ class ADS1115Device(I2CDevice):
         """Set input MUX configuration for the given readout channel"""
         assert 0 <= chan < self.NCHANNELS
         if 0 <= mux < 8:
+            self.MUX = self.MUX.copy()
             self.MUX[chan] = mux
             return True
         return False
