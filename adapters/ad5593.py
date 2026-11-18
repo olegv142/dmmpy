@@ -138,6 +138,24 @@ class AD5593Device(I2CDevice):
         inp = self.INP.get(channel, channel)
         return 'V' if inp < self.TEMP_CHAN else '°C'
 
+    def setup_dac_pins(self, pin_mask: int) -> bool:
+        """Set DAC pins given a 8-bit map"""
+        return self.adapter.i2c_write(self.I2C_ADDR, [5, 0, pin_mask])
+
+    def write_dac_pin(self, pin: int, value: int) -> bool:
+        """Set DAC output level given the pin index"""
+        return self.adapter.i2c_write(self.I2C_ADDR, [0x10 + pin, value >> 8, value & 0xff])
+
+    def write_dac_pins(self, pin_values: list[tuple[int,int]]) -> bool:
+        """Set DAC output level for several pins at once"""
+        if not self.adapter.i2c_write(self.I2C_ADDR, [7, 0, 1]):
+            return False
+        for pin, value in pin_values:
+            if not self.write_dac_pin(pin, value):
+                return False
+        return self.adapter.i2c_write(self.I2C_ADDR, [7, 0, 0])
+
+
 if __name__ == '__main__':
     import sys
     import time
@@ -150,8 +168,14 @@ if __name__ == '__main__':
       ).open():
         print(dev)
         with dev:
+            i = 0
             dev.init()
+            assert dev.setup_dac_pins(0xff)
             while dev.is_connected():
+                assert dev.write_dac_pins([(j, 1024 if i % 8 == j % 8 else 0) for j in range(8)])
+                assert dev.write_dac_pin((i + 1) % 8, 2048)
                 data = dev.query_raw()
+                print(data)
                 print(dev.get_value(data, 0), dev.get_mode(data, 0), dev.get_value(data, 1), dev.get_mode(data, 1))
                 time.sleep(.5)
+                i += 1
