@@ -102,19 +102,21 @@ class AD5593Device(I2CDevice):
     def query_raw(self, idle_sleep=None) -> list[int]|None:
         """Query data from device"""
         try:
+            chan_vals = [[] for _ in range(self.NCHANNELS)]
             # Read all channels 3 times and apply median filter to them
             data = self.adapter.i2c_write_read(self.I2C_ADDR, [0x40], 6*self.NCHANNELS)
             if data is None:
                 return None
-            for i in range(self.NCHANNELS):
-                for j in range(3):
-                    if data[2*(j*self.NCHANNELS + i)] >> 4 != i:
-                        log.error('AD5593 returned invalid ADC data')
-                        self.disconnected = True
-                        return None
-            res = [struct.unpack('>H', bytes(data[2*i:2*i+2]))[0] & 0xfff for i in range(3*self.NCHANNELS)]
+            for i in range(3*self.NCHANNELS):
+                chan_data = data[2*i:2*i+2]
+                chan_idx = chan_data[0] >> 4
+                if chan_idx >= self.NCHANNELS:
+                    log.error('AD5593 returned invalid ADC data index: %d', chan_idx)
+                    self.disconnected = True
+                    return None
+                chan_vals[chan_idx].append(struct.unpack('>H', bytes(chan_data))[0] & 0xfff)
             # Apply median filter to channel data. Note that even after filtering the data is rather noisy.
-            return [sorted(res[i+self.NCHANNELS*j] for j in range(3))[1] for i in range(self.NCHANNELS)]
+            return [sorted(vals)[len(vals)//2] if vals else None for vals in chan_vals]
         except Exception as e:
             self.disconnected = True
             log.debug(e, exc_info=True)
@@ -155,6 +157,35 @@ class AD5593Device(I2CDevice):
                 return False
         return self.adapter.i2c_write(self.I2C_ADDR, [7, 0, 0])
 
+    def setup_gpio_pins(self,
+                inp_mask: int,
+                out_mask: int,
+                open_drain_mask: int = 0
+            ) -> bool:
+        """
+        Setup GPIO pins given a 8-bit maps. Pins present in the inp_mask will be configured
+        as inputs. Pins present in the out_mask will be configured as outputs. Output pins
+        present in open_drain_mask will be configured as open drain. The input and output pins
+        may overlap so that the real output level may be read back. Note that setting bit in
+        inp_mask or open_drain_mask will remove corresponding bit from ADC scan set.
+        The query_raw method is able to handle such situation. After that the get_value will
+        return None for the channel configured for GPIO. Surprisingly configuring pin just as
+        plain output will not remove it from the ADC scan sequence.
+        """
+        return self.adapter.i2c_write(self.I2C_ADDR, [10, 0, inp_mask]) and \
+               self.adapter.i2c_write(self.I2C_ADDR, [8,  0, out_mask]) and \
+               self.adapter.i2c_write(self.I2C_ADDR, [12, 0, out_mask & open_drain_mask])
+
+    def write_gpio_pins(self, out_bits: int) -> bool:
+        """Set logic levels to all pins configured as outputs given a bitmap"""
+        return self.adapter.i2c_write(self.I2C_ADDR, [9,  0, out_bits])
+
+    def read_gpio_pins(self) -> int|None:
+        """Read logic levels of all pins configured as inputs as a bitmap"""
+        data = self.adapter.i2c_write_read(self.I2C_ADDR, [0x60], 2)
+        if data is None:
+            return None
+        return data[1]
 
 if __name__ == '__main__':
     import sys
@@ -169,13 +200,20 @@ if __name__ == '__main__':
         print(dev)
         with dev:
             i = 0
+            OUT_PIN = 2
+            OUT_PINS = 1 << OUT_PIN
             dev.init()
             assert dev.setup_dac_pins(0xff)
+            assert dev.setup_gpio_pins(OUT_PINS, OUT_PINS)
             while dev.is_connected():
                 assert dev.write_dac_pins([(j, 1024 if i % 8 == j % 8 else 0) for j in range(8)])
                 assert dev.write_dac_pin((i + 1) % 8, 2048)
+                OUT_GPIO = 0xff if i % 2 else 0
+                assert dev.write_gpio_pins(OUT_GPIO)
                 data = dev.query_raw()
                 print(data)
                 print(dev.get_value(data, 0), dev.get_mode(data, 0), dev.get_value(data, 1), dev.get_mode(data, 1))
+                assert data[OUT_PIN] is None
+                assert dev.read_gpio_pins() == OUT_GPIO & OUT_PINS
                 time.sleep(.5)
                 i += 1
