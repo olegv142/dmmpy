@@ -101,11 +101,14 @@ class AD5593Device(I2CDevice):
 
     def query_raw(self, idle_sleep=None) -> list[int]|None:
         """Query data from device"""
+        if not self.is_connected():
+            return None
         try:
             chan_vals = [[] for _ in range(self.NCHANNELS)]
             # Read all channels 3 times and apply median filter to them
             data = self.adapter.i2c_write_read(self.I2C_ADDR, [0x40], 6*self.NCHANNELS)
             if data is None:
+                self.disconnected = True
                 return None
             for i in range(3*self.NCHANNELS):
                 chan_data = data[2*i:2*i+2]

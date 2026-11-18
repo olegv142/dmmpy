@@ -393,11 +393,14 @@ class ADS1220Device(SPIDevice):
 
     def query_raw(self, idle_sleep=time.sleep) -> Any|None:
         """Query data from device"""
-        data = []
+        if not self.is_connected():
+            return None
         try:
+            data = []
             for c in range(self.channels):
                 val = self.exec_conversion(self.MUX[c], self.GAIN[c], idle_sleep)
                 if val is None:
+                    self.disconnected = True
                     return None
                 data.append(val)
             return data

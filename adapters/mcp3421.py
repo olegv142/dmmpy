@@ -64,11 +64,12 @@ class MCP3421Device(I2CDevice):
         """Query raw data from device"""
         if not self.is_connected():
             return None
-        wait = self.TOUT
         try:
+            wait = self.TOUT
             while True:
                 idle_sleep(self.IDLE_DELAY)
                 if (data := self.adapter.i2c_read(self.I2C_ADDR, 4)) is None:
+                    self.disconnected = True
                     return None
                 if not (data[3] & 0x80):
                     return bytes(data[:3]) + b'\0'

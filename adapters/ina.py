@@ -77,10 +77,12 @@ class INA226Device(INADevice):
             return None
         try:
             if (idata := self.adapter.i2c_write_read(self.I2C_ADDR, [1], 2)) is None:
+                self.disconnected = True
                 return None
             if self.channels < 2:
                 return (bytes(idata),)
             if (vdata := self.adapter.i2c_write_read(self.I2C_ADDR, [2], 2)) is None:
+                self.disconnected = True
                 return None
             return (bytes(idata), bytes(vdata))
         except Exception as e:
@@ -190,16 +192,19 @@ class INA228Device(INADevice):
         read_channels = self.channels if self.CHAN_REMAP is None and not self.TEMPCO else self.NCHANNELS
         try:
             if (idata := self.adapter.i2c_write_read(self.I2C_ADDR, [4], 3)) is None:
+                self.disconnected = True
                 return None
             idata += b'\0' # extend it to 32 bits to simplify conversion
             if read_channels < 2:
                 return (bytes(idata),)
             if (vdata := self.adapter.i2c_write_read(self.I2C_ADDR, [5], 3)) is None:
+                self.disconnected = True
                 return None
             vdata += b'\0' # extend it to 32 bits to simplify conversion
             if read_channels < 3:
                 return (bytes(idata), bytes(vdata))
             if (tdata := self.adapter.i2c_write_read(self.I2C_ADDR, [6], 2)) is None:
+                self.disconnected = True
                 return None
             return (bytes(idata), bytes(vdata), bytes(tdata))
         except Exception as e:
