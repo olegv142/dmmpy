@@ -58,6 +58,9 @@ The CH347T adapter is the fastest and most versatile USB adapter board. This is 
 #### INA226/228 current & voltage monitor boards
 The INA226 and INA228 are high precision digital current and voltage monitor integrated circuits manufactured by Texas Instruments. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The **dmmpy** is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect the monitor board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The INA226 is able to deliver 64k counts while INA228 have 1M counts. Both can be read at the rate of around 10 samples per second. The INA228 module provides current measuring resolution outperforming by an order of magnitude the capabilities of any other multimeter at the fraction of their price. Besides at has precision on-chip temperature sensor. By connecting K-type termocouple instead of the current shunt one can utilize INA228 for temperature measuring in the range from -200°C to 1372°C with high resolution. See [Working with INA226/228 current & voltage monitors](#working-with-ina226228-current--voltage-monitors) for more details.
 
+#### AD5593 12-bit ADC/DAC
+The AD5593 has 8 I/O pins, which can be independently configured as ADC input, DAC output, GPIO input or GPIO push/pull or open drain output. The ADC and DAC are very fast, therefore its not necessary to wait for the conversion completion. There are also internal reference voltage source and temperature sensor. So its quite convenient solution but not without flaws. Its resolution is low (12 bit), the readings are noisy and the chip itself is not that cheap. The **dmmpy** supports reading of any input channel voltage as well as internal temperature in one or readout channels. In the custom script one can also use DAC or GPIO on any available channel. See [source code](adapters/ad5593.py) for API reference and usage example.
+
 #### MCP3421 18-bit ADC
 This is inexpensive Analog to Digital Converter chip manufactured by Microchip. They are sold by many vendors in a convenient form, soldered to small printed circuit boards with all necessary connectors. The **dmmpy** is able to collect readings from such boards by means of one of the tree USB to I2C adapters described above. You only have to connect MCP3421 board with USB adapter board by 4 wires (GND, VCC, SDA, SCL). The MCP3421 is able to measure voltage in the range -2.048V .. +2.048V with resolution down to ~2µV.
 
@@ -302,6 +305,11 @@ Some devices need special settings not applicable to other device. There is a sp
 | range          | INA228 shunt voltage range {0,1}                                   | 0                | INA228           |
 | tempco         | INA228 shunt temperature coefficient                               | 0                | INA228           |
 | amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}                 | cv               | INA228           |
+| buf_en         | ADC input buffer enable                                            | 1                | AD5593           |
+| int_ref        | Internal reference enable                                          | 1                | AD5593           |
+| range          | ADC full scale range {0: VREF, 1: 2xVREF}                          | 0                | AD5593           |
+| inp            | Main readout channel ADC input                                     | 0                | AD5593           |
+| ainp           | Alternative readout channel ADC input                              | 8 (temp. sensor) | AD5593           |
 | gain           | ADC amplifier gain                                                 | 0 (ADS1115) or 1 | MCP3421, ADS1115, ADS1220, ADS1263 |
 | again          | Alternative channel ADC amplifier gain                             | 0                | ADS1115, ADS1220          |
 | mux            | ADC input multiplexer configuration                                | device specific  | ADS1115, ADS1220          |
