@@ -563,6 +563,9 @@ To fix it find the adapter in Device Manager / Human Interface Devices (VID = 0x
 ### The electric current values read from INA226/228 are very noisy
 Most probably you have left INA module ground floating while measuring current. Connecting only two current terminals of the INA module to electric circuit while measuring current seems logical, similar to using a digital multimeter. However, due to differences in the measuring circuits, this results in very high noise levels during measurement and in some cases may even damage the INA module. Its strongly recommended to attach the INA module ground either to the ground of the circuit being measured or connect it directly to the negative current terminal. Its also strongly recommended to add USB isolation between you computer and I2C USB adapter board.
 
+### CH347T failed to establish SPI communication with ADS1220 powered by 5V
+SPI levels correspond to the 3.3 V supply voltage on the CH347T chip. Therefore, they may not be sufficient for an ADC powered by 5 V. You should always power digital part of ADC from 3.3V while communicating by SPI with it. The analog supply voltage can still be 5V.
+
 ### Unable to open device USB port on Linux
 An attempt to access the device as plain user may fail on Linux due to restrictive permissions. To be able to access the USB serial port you either have to run the **dmm-get** or **dmm-start** tool as a root or add iself to *dialout* group:
 ```
