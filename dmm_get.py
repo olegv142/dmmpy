@@ -20,6 +20,7 @@ from adapters.mcp3421 import MCP3421Device
 from adapters.ads1115 import ADS1115Device
 from adapters.ads1220 import ADS1220Device
 from adapters.ads1263 import ADS1263Device
+from adapters.ad5593 import AD5593Device
 from adapters.i2c import I2CBusScanner
 from data_stat import StatCollector, histogram
 from version import version_str
@@ -39,6 +40,7 @@ _supported_devices = (
     INA226Device,
     INA228Device,
     MCP3421Device,
+    AD5593Device,
     ADS1115Device,
     ADS1220Device,
     ADS1263Device
