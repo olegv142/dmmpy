@@ -358,6 +358,7 @@ By default, the **dmm-get** tool expects the UT61X+ multimeter as the target dev
 |         | ADS1115 with I2C to USB adapter              | -M ADS1115            | ADS1115                            |
 |         | ADS1220 with SPI to USB adapter              | -M ADS1220            | ADS1220                            |
 |         | ADC1263 with SPI to USB adapter              | -M ADC1263            | ADC1263                            |
+| Analog Devices | AD5593 with I2C to USB adapter        | -M AD5593             | AD5593                             |
 | Microchip | MCP3421 with I2C to USB adapter            | -M MCP3421            | MCP3421                            |
 
 ### Working with INA226/228 current & voltage monitors
