@@ -542,7 +542,7 @@ The **dmm-start** tool creates several files and directories next to executable 
 | .internal/                           | Folder containing executable components such as a shared libraries and compiled Python code. |
 
 ## Troubleshooting
-If something goes wrong you may consider looking to the logs and/or add *--verbose* option to **dmm-get** and **dmm-start** command line. If you have a problems communicating with I2C device you can check that its responding to its address by means of *dmm-get i2c-scan* command. It has the following form:
+If something goes wrong you may consider looking to the logs and/or add *--verbose* option to **dmm-get** and **dmm-start** command line. If you have a problems communicating with I2C device you can check that it is alive and responding to its address by means of *dmm-get i2c-scan* command. It has the following form:
 ```
 dmm-get [--param i2c=<adapter>] i2c-scan
 ```
