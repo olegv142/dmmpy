@@ -83,14 +83,14 @@ The CH347T is the only USB to SPI adapter supported by **dmmpy**. Typically you 
 So there are much more signals than just SDA/SCL + power used by I2C devices. Typically SPI ADC are also more complicated in setting up correctly. Reading device datasheet first is always strongly recommended when dealing with SPI ADC devices.
 
 #### ADS1220 24-bit ADC
-This is the versatile and quite sensitive ADC with 4 analog inputs similar to ADS1115 but with more resolution and features. Its relatively simple to use provided that you can wire it to the CH347T adapter. This device is also sold by Chinese sellers at a surprisingly low price.Of course, it needs to be thoroughly tested. The **dmmpy** program provides a very convenient test platform where you can check almost all of the chip's functions. See [Working with ADS1220 ADC boards](#working-with-ads1220-adc-boards) for more information.
+This is the versatile and quite sensitive ADC with 4 analog inputs similar to ADS1115 but with more resolution and features. Its relatively simple to use provided that you can wire it to the CH347T adapter. The ADS1220 boards are sold by Chinese sellers at a surprisingly low price. Of course, they need to be thoroughly tested. The **dmmpy** program provides a very convenient test platform where you can check almost all of the chip's functions. See [Working with ADS1220 ADC boards](#working-with-ads1220-adc-boards) for more information.
 
 #### ADS1263 32-bit ADC
 This is the most versatile ADC among those supported by **dmmpy**. Is has quite profound list of features and very impressive noise performance. In fact it combines two independent ADC with 32 and 24 bits resolution having access to 10 analog inputs, internal temperature sensor and test DAC for self diagnostic. It even able to use some of its analog inputs as GPIO pins. See [Working with ADS1263 ADC boards](#working-with-ads1263-adc-boards) for more details.
 
 
 ## Installation
-The installation basically involves three steps - getting the source, installing python and installing required packages. Windows users have convenient alternative of using [portable binaries](#using-portable-binaries).
+The installation basically involves three steps - getting the source, installing python and installing required packages. Windows users have a convenient alternative in the form of [using portable binaries](#using-portable-binaries).
 
 ### Getting the source code
 ```
