@@ -445,7 +445,7 @@ class ADS1263Device(SPIDevice):
             self.disconnected = True
             log.debug(e, exc_info=True)
 
-    def query_raw(self, idle_sleep=time.sleep) -> Any|None:
+    def query_raw(self, idle_sleep=time.sleep) -> list[float]|None:
         """Query data from device"""
         data = []
         try:
