@@ -302,31 +302,32 @@ Some devices need special settings not applicable to other device. There is a sp
 | i2c            | I2C to USB adapter for INA device {FT260,CP2112,CH347T}            | FT260            | I2C device       |
 | addr           | I2C address                                                        | device specific  | I2C device       |
 | shunt          | Shunt resistance for INA current & voltage monitors                | 0.1 Ohm          | INA226/228       |
-| range          | INA228 shunt voltage range {0,1}                                   | 0                | INA228           |
 | tempco         | INA228 shunt temperature coefficient                               | 0                | INA228           |
 | amode          | INA228 alternative readout mode {cv,vt,tc,ktv,ktt}                 | cv               | INA228           |
+| range          | INA228 shunt voltage range {0,1}                                   | 0                | INA228           |
+| range          | ADC full scale range {0: VREF, 1: 2xVREF}                          | 0                | AD5593           |
 | buf_en         | ADC input buffer enable                                            | 1                | AD5593           |
 | int_ref        | Internal reference enable                                          | 1                | AD5593           |
-| range          | ADC full scale range {0: VREF, 1: 2xVREF}                          | 0                | AD5593           |
 | inp            | Main readout channel ADC input                                     | 0                | AD5593           |
 | ainp           | Alternative readout channel ADC input                              | 8 (temp. sensor) | AD5593           |
-| gain           | ADC amplifier gain                                                 | 0 (ADS1115) or 1 | MCP3421, ADS1115, ADS1220, ADS1263 |
-| again          | Alternative channel ADC amplifier gain                             | 0                | ADS1115, ADS1220          |
-| mux            | ADC input multiplexer configuration                                | device specific  | ADS1115, ADS1220          |
-| amux           | Alternative channel ADC input multiplexer configuration            | device specific  | ADS1115, ADS1220          |
+| mux            | ADC input multiplexer configuration                                | device specific  | ADS1115, ADS1220 |
+| amux           | Alternative channel ADC input multiplexer configuration            | device specific  | ADS1115, ADS1220 |
 | vref           | Selects the source of ADC reference voltage                        | internal         | ADS1220          |
 | fir            | Selects ADC filtering mode                                         | 50Hz reject      | ADS1220          |
 | turbo          | Enables ADC turbo mode                                             | 0                | ADS1220          |
 | bcs            | Enables burn-out current sources                                   | 0                | ADS1220          |
-| rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6                | ADS1220          |
 | oc             | Enables offset compensation                                        | 0                | ADS1220          |
 | os             | Enables oversampling                                               | 0                | ADS1220          |
+| rdy            | SPI adapter gpio pin used as ADC data ready input                  | 6                | ADS1220          |
+| spi_cs         | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220, ADS1263 |
+| gain           | ADC amplifier gain                                                 | 0 (ADS1115) or 1 | MCP3421, ADS1115, ADS1220, ADS1263 |
+| again          | Alternative channel ADC amplifier gain                             | 0                | ADS1115, ADS1220 |
+| gain2          | ADC2 amplifier gain                                                | 1                | ADS1263          |
 | i1mux          | Selects the first excitation current source connection             | off              | ADS1220, ADS1263 |
 | i2mux          | Selects the second excitation current source connection            | off              | ADS1220, ADS1263 |
 | idac           | Selects the ADC excitation current source mode                     | off              | ADS1220          |
 | i1dac          | Selects the first excitation current source magnitude              | off              | ADS1263          |
 | i2dac          | Selects the second excitation current source magnitude             | off              | ADS1263          |
-| spi_cs         | SPI Chip Select pin used, disables using CS signal if set to -1    | 0                | ADS1220, ADS1263 |
 | muxp           | Selects positive ADC input connection                              | 0                | ADS1263          |
 | muxn           | Selects negative ADC input connection                              | 1                | ADS1263          |
 | muxp2          | Selects positive ADC2 input connection                             | temp. sensor     | ADS1263          |
