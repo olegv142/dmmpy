@@ -508,13 +508,13 @@ On Windows the *standalone/build_sfx.bat* script builds standalone executables i
 
 The *dmm-tools/scripts* folder contains several *.bat* files that can make setting up your Windows environment easier:
 
-| Script                 | What it does                                                               |
-|------------------------|----------------------------------------------------------------------------|
-| *create_links.bat*     | creates links to executables and data folder on your Windows desktop       |
-| *delete_links.bat*     | removes links from your Windows desktop                                    |
-| *associate_data.bat*   | associates output files with .data extension with data plotting executable |
-| *deassociate_data.bat* | removes output files association with data plotting executable             |
-| *clear_config.bat*     | drops saved configurations reverting all settings to default values        |
+| Script                 | What it does                                                                 |
+|------------------------|------------------------------------------------------------------------------|
+| *create_links.bat*     | creates links to executables and data folder on your Windows desktop         |
+| *delete_links.bat*     | removes links from your Windows desktop                                      |
+| *associate_data.bat*   | associates output files having .data extension with data plotting executable |
+| *deassociate_data.bat* | removes output files association with data plotting executable               |
+| *clear_config.bat*     | drops saved configurations reverting all settings to default values          |
 
 On Linux one can build executables by the following command
 ```
@@ -530,7 +530,7 @@ There are several other tools that are actually wrappers around **dmm-get** tool
 | **dmm-hist** | Plots histogram for the file passed as command line arguments similar to **dmm-get hist** command. On Windows one can drag and drop file to this tool to plot its histogram.     |
 | **dmm-stat** | Prints statistics for the file passed as command line arguments similar to **dmm-get stat** command. On Windows one can drag and drop file to this tool to print its statistics. |
 
-For convenience you can associate .dat files with **dmm-plot** tool. To do it right click such file, choose 'Open with', then select 'Choose another app', then click 'Choose an app from your PC' at the bottom of the list, then select **dmm-plot** tool in the file chooser and finally click 'Always' button. Now the **dmm-plot** tool will plot .dat file every time you double click it.
+For convenience you can associate *.data* files with **dmm-plot** tool by executing *dmm-tools/scripts/associate_data.bat* script. After that the **dmm-plot** tool will plot *.data* file every time you double click it.
 
 ## Special files and folders
 The **dmm-start** tool creates several files and directories next to executable to save data, logs and other execution artifacts. By default only data directory is visible. It contains sub-folders named by creation date with data files having time and multimeter model as parts of their names by default. The user may change the name of the output file in **dmm-start** window if necessary. There are several other files and folders with names started with dot. One should use *ls* with *-a* switch to see them on Linux or enable 'Show hidden and system files' option in 'System/Advanced/File Explorer' settings on Windows. They are listed in the following table.
