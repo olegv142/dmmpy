@@ -564,7 +564,7 @@ The auto power off feature powers off device after 15 min of inactivity. The Ane
 This happens because Windows flags all unsigned executables downloaded from the web as untrusted. There are two ways to overcome it. You can click *More info* and press *Run anyway* button. Otherwise you can clean this flag in advance by right clicking the executable and checking *Unblock* on the *General tab* of the file *Properties*.
 
 ### Unable to find OWON desktop multimeter or programmable power source on Linux
-There are several system services used to be installed by default that may open connected device preventing its discovery by **dmm-get** or **dmm-start** tools. Try to the execute the following commands in the terminal and reconnect your device.
+There are several system services used to be installed by default that may open connected device preventing its discovery by **dmm-get** or **dmm-start** tools. Try to execute the following commands in the terminal and reconnect your device.
 ```
 sudo apt remove brltty
 sudo systemctl stop ModemManager
