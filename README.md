@@ -867,7 +867,7 @@ if dev := INA228Device.set_i2c_adapter(CP2112Adapter).open():
                 break
 ```
 
-### Reading data from several I2C devices on the same bus
+#### Reading data from several I2C devices on the same bus
 The I2CDevice base class adds an important method to its descendants - attach_to_i2c_bus. It creates device instance by attaching it to existing I2C bus given the initialized instance of another 'master' device already sitting on the bus. No USB device discovery is necessary for the new device creation. It just uses already initialized USB device of the master. This method is useful in case you are going to read data from multiple devices sharing the same I2C bus and USB adapter. The following code example illustrates reading the data from ADS1115 and MCP3421 devices sharing the same bus.
 ```python
 from dmmpy.adapters.ads1115 import ADS1115Device
@@ -890,7 +890,7 @@ if dev1 := ADS1115Device.set_i2c_adapter(FT260Adapter).open():
 ```
 Note that devices sharing the same bus should have different bus addresses to avoid conflicts. The MCP3421 has bus address programmed on the factory so its hard to have more than one such device on the bus. The ADS1115 may be configured to use 4 different addresses so you can attach 4 such devices to the same bus. Look at the particular device datashit for more details.
 
-### Sampling ADS1115 inputs sequentially
+#### Sampling ADS1115 inputs sequentially
 While working with ADS1115 adapter class one can sample specific input multiplexer and gain configuration with exec_conversion method as illustrated by the following code.
 ```python
 from dmmpy.adapters.ads1115 import ADS1115Device
@@ -908,7 +908,7 @@ if dev := ADS1115Device.set_i2c_adapter(CP2112Adapter).open():
                 )
 ```
 
-### Measuring multiple voltages by ADS1115 with external multiplexer
+#### Measuring multiple voltages by ADS1115 with external multiplexer
 By attaching external multiplexer to ADS1115 you can create device able to measure multiple voltages sequentially. The example of such device is shown below. It is capable of monitoring voltage in 16 input channels.
 
 ![ADS1115 with external multiplexer schematic](/misc/ads1115_mux.png)
@@ -930,7 +930,7 @@ if dev := ADS1115Device.open():
 ```
 See [ads1115_mux.py](adapters/ads1115_mux.py) for more implementation details. Note that ADS1115 has finite input impedance of ~10 MOhm. Therefore to keep measuring accuracy within 0.1% the R0 value should not exceed 10kOhm.
 
-### Working with I2C and SPI devices simultaneously via the CH347T adapter
+#### Working with I2C and SPI devices simultaneously via the CH347T adapter
 The following code illustrates reading ADS1115 and ADS1220 devices connected to the same CH347T adapter via two different buses - I2C and SPI. The ADS1115 device is opened first. Then the attach_to_i2c_adapter method creates instance of ADS1220Device connected to the same adapter.
 
 ```python
@@ -952,7 +952,7 @@ if dev1 := ADS1115Device.set_i2c_adapter(CH347TAdapter).open():
                 )
 ```
 
-### Using UART port of the FT260 adapter
+#### Using UART port of the FT260 adapter
 The big advantage of FT260 USB adapter is the possibility to use its UART port in parallel with I2C bus operation. The UART has its own HID device instance so its completely independent. The only peculiarity that should be kept in mind is the low receiver queue capacity. Therefore the port should be read frequently to avoid data loss. The ft260_uart.py module implements the dedicated receiver class queuing data received by UART in separate thread. The following code fragment illustrates using FT260 module UART port to transmit message and receive it back having RX-TX pins interconnected.
 ```python
 import time
@@ -971,7 +971,7 @@ else:
 See [ft260_uart.py](adapters/ft260_uart.py) for more implementation details. Note that on the CJMCU-260 module the NF0 operation mode selection pin is pulled up so that only I2C is enabled by default.
 One should connect NF0 pin to GND to be able to use UART and I2C at the same time.
 
-### Using UART port of the CH347T adapter
+#### Using UART port of the CH347T adapter
 The CH347T adapter also has UART port that can be used independently of the I2C and SPI buses. It is faster than FT260 UART but lacks the hardware flow control (which is rarely used anyway). The following code illustrates using it to transmit message and receive it back having RX-TX pins interconnected.
 
 ```python
