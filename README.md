@@ -623,7 +623,7 @@ The CH347T adapter has several operating modes. Only mode 2 is supported by **dm
 Most probably you have RESET input of the chip floating. You should pull it to the high logic level if it was not done on the board.
 
 ### Unable to read data from alternative readout channel of ADS1263 device
-Most probably you have counterfactual remarked ADS1262 ADC without second ADC. Note that the rest of this chip is compatible with ADS1263 so that the main readout channel should work as expected.
+Most probably you have counterfactual remarked ADS1262 without second ADC. Note that the rest of this chip is compatible with ADS1263 so that the main readout channel should work as expected. See [Counterfactual ADS1263 chips and testing](#counterfactual-ads1263-chips-and-testing) for more details.
 
 # Appendixes
 
