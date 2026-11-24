@@ -7,9 +7,9 @@ import time
 import struct
 import logging
 
+from .device import Device
 from .spi import SPIDevice
 from .params import IParam, init_defaults, parse
-from .device import Device
 
 log = logging.getLogger('DEV')
 

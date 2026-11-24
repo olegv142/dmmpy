@@ -8,6 +8,7 @@ import struct
 import logging
 from typing import Any
 
+from .device import Device
 from .spi import SPIDevice
 
 log = logging.getLogger('DEV')
