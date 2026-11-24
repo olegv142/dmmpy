@@ -45,6 +45,8 @@ if __name__ == '__main__':
     import sys
     if '-v' in sys.argv[1:]:
         logging.basicConfig(level=logging.DEBUG)
+    if '--1262' in sys.argv[1:]:
+        NADC = 1
     if dev := ADS1263Device.open():
         test_avdd(dev)
         max_err = 0
