@@ -429,6 +429,8 @@ The default value of the *gain* is 0 so that ADS1115 will use its full scale ran
 
 In case you are going to read alternative data channel you may configure its multiplexing and gain by specifying *amux* and *again* parameters. So you will be able to sample and plot two voltage sources connected to different ADS1115 inputs. The default value of *again* is 0 (full scale range of 6.144V). The default *amux* is 7 so you will sample AIN3 input relative to the ground.
 
+Note that there exists low resolution version of the chip - ADS1015. It is pin-to-pin and protocol compatible with ADS1115 but has only 12 bits of resolution with faster sampling rate. So if you see that low order bits of the result are always zero, then you probably have ADS1015. China sellers may send you ADS1015 and ADS1115 mixed randomly.
+
 ### Working with ADS1220 ADC boards
 To be able to receive data from ADS1220 ADC board you need to connect it to CH347T USB adapter with signals listed in [SPI devices connected via USB adapter](#spi-devices-connected-via-usb-adapter) chapter. Typical ADS1220 board has two power inputs (digital and analog), so that you have to connect both of them. The CS signal should be connected to CS0 pin of the adapter. The DRDY signal should be connected to IO6 pin of the adapter. Both pins can be changed by setting *spi_cs* and *rdy* parameters if necessary. The *gain* and *again* parameters specify the ADC internal amplifier gain. They should be selected from the set {1, 2, 4, 8, 16, 32, 64, 128}. The gain 1 is the default. Note that using gains 8 and above will engage internal amplifier. This will increase noise slightly and reduce possible input voltage range. At high gain settings the input voltage at both positive and negative inputs should be close to the half of the power voltage. In particular, you should never use a single ended input at gain 8 and above.
 
@@ -480,11 +482,29 @@ The ADS1263 has two independent ADC, so that the **dmmpy** uses the main 32-bit 
 
 We are not pretending to list all possible parameters here since their list is quite long. Please consult the device [datasheet](https://www.ti.com/lit/gpn/ADS1263) and [source code](adapters/ads1263.py) for more details. One can also consider the ADC1263 [self test code](adapters/ads1263_test.py) as an example of using ADS1263 in your custom scripts. See also [ads1263_gpio.py](adapters/ads1263_gpio.py) as an example of using GPIO with ADC1263.
 
-To evaluate ADC1263 noise performance one can access it in **dmm-start** acquisition launcher with the following *device parameters*:
+#### Counterfactual ADS1263 chips and testing
+There is a simplified version of the chip - ADS1262. It does not have second ADC but the rest of this chip is compatible with ADS1263. China sellers may send you ADS1262 remarked as ADS1263. To reveal such cases easily the **dmmpy** has debug print that will show you the chip version read from the internal chip register. To be able to see this message you should start **dmm-get** or **dmm-start** with *--verbose* option. The alternative readout channel will not work with ADS1262 but the main readout channel should work as expected. To further test the chip the following steps are recommended:
+
+1. To evaluate noise performance one can start acquisition in **dmm-start** launcher with the following *device parameters*:
 ```
 muxp=14,muxn=14,chop=1,gain=32,filter=3
 ```
-This will start sampling with input shorted and internal chopper activated. On my pretty trivial setup it gives 10nV RMS noise, which is an order of magnitude better than what can be achieved with the ADS1220 ADC in similar test.
+This will start sampling with input shorted and internal chopper activated. On my pretty trivial setup it gives 10nV RMS noise, which is an order of magnitude better than what can be achieved with the ADS1220 ADC in similar test. This test should work with both ADS1263 and ADS1262.
+
+2. To test ADC with internal DAC one may run the following in the command prompt at **dmmpy** project folder:
+```
+python -m adapters.ads1263_test
+```
+To test ADS1262 version just add *--1262* option
+```
+python -m adapters.ads1263_test --1262
+```
+
+3. To test GPIO features one may execute the following:
+```
+python -m adapters.ads1263_gpio
+```
+This test is applicable to both ADS1263 and ADS1262.
 
 # Working with GUI
 The GUI workflow is built around **dmm-start** script that provides convenient UI for setting **dmm-get** options and launching data acquisition in separate processes. The single instance of **dmm-start** UI can launch any number of data acquisition processes working in parallel, saving data to separate files and showing collected data in their own data plot windows. The following figure illustrates using data acquisition GUI reading data from 3 multimeters simultaneously on Raspberry Pi5.
@@ -598,6 +618,12 @@ You have to re-login or reboot to apply new group membership properly.
 
 ### CH347T USB adapter not found by **dmmpy**
 The CH347T adapter has several operating modes. Only mode 2 is supported by **dmmpy**. Typically there is a small double dip-switch on the adapter board that can be used to select required mode. If there is no such switch (or there is a switch with 4 sections) then you probably have different chip CH347F which is not supported by **dmmpy**. Chinese sellers may even do not distinguish them and send randomly.
+
+### Unable to read data from ADS1263 device, any register reads as zero
+Most probably you have RESET input of the chip floating. You should pull it to the high logic level if it was not done on the board.
+
+### Unable to read data from alternative readout channel of ADS1263 device
+Most probably you have counterfactual remarked ADS1262 ADC without second ADC. Note that the rest of this chip is compatible with ADS1263 so that the main readout channel should work as expected.
 
 # Appendixes
 
