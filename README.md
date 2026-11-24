@@ -482,7 +482,7 @@ The ADS1263 has two independent ADC, so that the **dmmpy** uses the main 32-bit 
 
 We are not pretending to list all possible parameters here since their list is quite long. Please consult the device [datasheet](https://www.ti.com/lit/gpn/ADS1263) and [source code](adapters/ads1263.py) for more details. One can also consider the ADC1263 [self test code](adapters/ads1263_test.py) as an example of using ADS1263 in your custom scripts. See also [ads1263_gpio.py](adapters/ads1263_gpio.py) as an example of using GPIO with ADC1263.
 
-#### Counterfactual ADS1263 chips and testing
+#### Counterfeit ADS1263 chips and testing
 There is a simplified version of the chip - ADS1262. It does not have second ADC but the rest of this chip is compatible with ADS1263. China sellers may send you ADS1262 remarked as ADS1263. To reveal such cases easily the **dmmpy** has debug print that will show you the chip version read from the internal chip register. To be able to see this message you should start **dmm-get** or **dmm-start** with *--verbose* option. The alternative readout channel will not work with ADS1262 but the main readout channel should work as expected. To further test the chip the following steps are recommended:
 
 1. To evaluate noise performance one can start acquisition in **dmm-start** launcher with the following *device parameters*:
@@ -623,7 +623,7 @@ The CH347T adapter has several operating modes. Only mode 2 is supported by **dm
 Most probably you have RESET input of the chip floating. You should pull it to the high logic level if it was not done on the board.
 
 ### Unable to read data from alternative readout channel of ADS1263 device
-Most probably you have counterfactual remarked ADS1262 without second ADC. Note that the rest of this chip is compatible with ADS1263 so that the main readout channel should work as expected. See [Counterfactual ADS1263 chips and testing](#counterfactual-ads1263-chips-and-testing) for more details.
+Most probably you have counterfeit ADS1262 without second ADC remarked as ADS1263. Note that the rest of this chip is compatible with ADS1263 so that the main readout channel should work as expected. See [Counterfactual ADS1263 chips and testing](#counterfeit-ads1263-chips-and-testing) for more details.
 
 # Appendixes
 
