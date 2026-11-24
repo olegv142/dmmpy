@@ -8,6 +8,7 @@ from .ads1263 import ADS1263Device
 log = logging.getLogger('DEV')
 
 AVDD = None
+NADC = 2 # set to 1 for ADS1262
 
 def test_avdd(dev):
     global AVDD
@@ -28,9 +29,9 @@ def test_tdac(dev, tdacp, tdacn, tdacr):
     while gain <= max_gain:
         if dev.set_gain(gain) + dev.set_gain2(gain) == 0:
             break
-        dev.init(2)
+        dev.init(NADC)
         data = dev.query_raw()
-        for i in range(2):
+        for i in range(NADC):
             v = dev.get_value(data, i)
             err = abs((v - tdacv) / tdacv)
             if err > max_err:
