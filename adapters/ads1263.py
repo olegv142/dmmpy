@@ -9,6 +9,7 @@ import logging
 
 from .spi import SPIDevice
 from .params import IParam, init_defaults, parse
+from .device import Device
 
 log = logging.getLogger('DEV')
 
@@ -226,7 +227,8 @@ class ADS1263Device(SPIDevice):
         if resp is None:
             return False
         if validate and resp[-n:] != data:
-            log.error('ADS1263 failed to update %d reg(s) at addr %d', n, addr)
+            log.error('ADS1263 failed to update %d reg(s) at addr %d: wr %s, rd %s',
+                n, addr, data, resp[-n:])
             return False
         return True
 
