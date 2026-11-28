@@ -31,7 +31,7 @@
 |             |                 | 20 / .001 A    |                  |                                    |         |
 | ZOTEK       | 20 / .001 mV    | 200 / .01 µA   | 100 Ohm          | $\color{green}{\text{20 / .001}}$  | DB      |
 | ZT-219      |                 | 2000 / .1 µA   | 100 Ohm          | $\color{blue}{\text{200 / .01}}$   |         |
-|             |                 | 20 / .001 mA   | 2 Ohm            | $\color{green}{\text{40 / .001}}$  |         |
+| ZT-303      |                 | 20 / .001 mA   | 2 Ohm            | $\color{green}{\text{40 / .001}}$  |         |
 |             |                 | 200 / .01 mA   | 2 Ohm            | $\color{red}{\text{400 / .01}}$    |         |
 |             |                 | 2 / .0001 A    |                  |                                    |         |
 |             |                 | 20 / .001 A    |                  |                                    |         |
